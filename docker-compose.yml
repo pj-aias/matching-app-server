@@ -3,6 +3,8 @@ version: '3.9'
 services:
     api:
         build: ./api
+        volumes:
+            - ./api:/app
 
     db:
         image: mysql:latest
