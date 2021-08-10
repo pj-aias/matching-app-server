@@ -5,7 +5,8 @@ services:
         build: ./api
         volumes:
             - ./api:/app
-
+        secrets:
+            - mysql_password
         depends_on:
             - db
 
@@ -14,7 +15,11 @@ services:
         volumes:
             - mysqldata:/var/lib/mysql
         environment:
-            - MYSQL_RANDOM_ROOT_PASSWORD='1'
+            - MYSQL_ROOT_PASSWORD='yes'
 
 volumes:
     mysqldata:
+
+secrets:
+    mysql_password:
+        file: ./mysql_password.txt
