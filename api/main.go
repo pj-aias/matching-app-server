@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	mysql_password string
+	mysqlPassword string
 )
 
 func main() {
@@ -39,5 +39,5 @@ func init() {
 		log.Fatal("failed to read MySQL Password: ", err)
 	}
 
-	mysql_password = string(buf)
+	mysqlPassword = string(buf)
 }
