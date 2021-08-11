@@ -7,6 +7,7 @@ services:
             - "8080:8080"
         volumes:
             - ./api:/app
+            - go:/go
         secrets:
             - mysql_password
         depends_on:
@@ -21,6 +22,8 @@ services:
 
 volumes:
     mysqldata:
+
+    go:
 
 secrets:
     mysql_password:
