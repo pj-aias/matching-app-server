@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+    api:
+        build: ./api
+        ports:
+            - "8080:8080"
+        volumes:
+            - ./api:/app
+            - go:/go
+        secrets:
+            - mysql_password
+        depends_on:
+            - db
+
+    db:
+        build: ./db
+        volumes:
+            - mysqldata:/var/lib/mysql
+        secrets:
+            - mysql_password
+
+volumes:
+    mysqldata:
+
+    go:
+
+secrets:
+    mysql_password:
+        file: ./mysql_password.txt
