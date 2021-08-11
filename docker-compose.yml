@@ -11,11 +11,11 @@ services:
             - db
 
     db:
-        image: mysql:latest
+        build: ./db
         volumes:
             - mysqldata:/var/lib/mysql
-        environment:
-            - MYSQL_ROOT_PASSWORD='yes'
+        secrets:
+            - mysql_password
 
 volumes:
     mysqldata:
