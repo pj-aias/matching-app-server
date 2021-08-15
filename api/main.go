@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 
+	"github.com/pj-aias/matching-app-server/controller"
 	"github.com/pj-aias/matching-app-server/db"
 )
 
@@ -16,6 +17,8 @@ func main() {
 			"message": "pong",
 		})
 	})
+
+	r.GET("user", controller.UserShow)
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
