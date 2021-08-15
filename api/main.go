@@ -12,12 +12,6 @@ func main() {
 
 	r := gin.Default()
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-
 	r.GET("user", controller.UserShow)
 	r.POST("user", controller.UserAdd)
 	r.PATCH("user", controller.UserUpdate)
