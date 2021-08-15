@@ -2,13 +2,26 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pj-aias/matching-app-server/db"
 )
 
 func UserShow(c *gin.Context) {
-	c.JSON(http.StatusOK, db.User{})
+	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := db.GetUser(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 }
 
 func UserAdd(c *gin.Context) {

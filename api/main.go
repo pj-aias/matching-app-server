@@ -12,7 +12,7 @@ func main() {
 
 	r := gin.Default()
 
-	r.GET("user", controller.UserShow)
+	r.GET("user/:id", controller.UserShow)
 	r.POST("user", controller.UserAdd)
 	r.PATCH("user", controller.UserUpdate)
 
