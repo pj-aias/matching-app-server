@@ -9,18 +9,18 @@ import (
 )
 
 type User struct {
-	ID     uint   `json:"id"`
-	Name   string `json:"name"`
-	Avatar string `json:"avatar"`
-	Bio    string `json:"bio"`
+	ID       uint   `json:"id"`
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
+	Bio      string `json:"bio"`
 }
 
 func fromRawData(raw db.User) User {
 	return User{
-		ID:     raw.ID,
-		Name:   raw.Name,
-		Avatar: raw.Avatar,
-		Bio:    raw.Bio,
+		ID:       raw.ID,
+		Username: raw.Username,
+		Avatar:   raw.Avatar,
+		Bio:      raw.Bio,
 	}
 }
 
@@ -56,7 +56,7 @@ func UserAdd(c *gin.Context) {
 	}
 
 	param := db.User{
-		Name: data.Name,
+		Username: data.Name,
 	}
 	result, err := db.AddUser(param)
 	if err != nil {

@@ -4,12 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/pj-aias/matching-app-server/controller"
-	"github.com/pj-aias/matching-app-server/db"
 )
 
 func main() {
-	db.TestInsert(db.User{Name: "hoge"})
-
 	r := gin.Default()
 
 	r.GET("user/:id", controller.UserShow)
