@@ -8,6 +8,22 @@ import (
 	"github.com/pj-aias/matching-app-server/db"
 )
 
+type User struct {
+	ID     uint   `json:"id"`
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
+	Bio    string `json:"bio"`
+}
+
+func fromRawData(raw db.User) User {
+	return User{
+		ID:     raw.ID,
+		Name:   raw.Name,
+		Avatar: raw.Avatar,
+		Bio:    raw.Bio,
+	}
+}
+
 func UserShow(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
 	if err != nil {
@@ -15,12 +31,13 @@ func UserShow(c *gin.Context) {
 		return
 	}
 
-	user, err := db.GetUser(id)
+	result, err := db.GetUser(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
 
+	user := fromRawData(result)
 	c.JSON(http.StatusOK, user)
 }
 
@@ -38,15 +55,16 @@ func UserAdd(c *gin.Context) {
 		return
 	}
 
-	userData := db.User{
+	param := db.User{
 		Name: data.Name,
 	}
-	createdUser, err := db.AddUser(userData)
+	result, err := db.AddUser(param)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	createdUser := fromRawData(result)
 	c.JSON(http.StatusOK, createdUser)
 }
 
