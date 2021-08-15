@@ -6,11 +6,16 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
 	database *gorm.DB
 )
+
+func TestInsert(user User) {
+	database.Create(&user)
+}
 
 func init() {
 	user := "root"
@@ -21,6 +26,9 @@ func init() {
 	config := gorm.Config{}
 
 	database = connectDB(user, password, host, port, dbName, config)
+
+	database.Logger.LogMode(logger.Info)
+	autoMigrate(database)
 }
 
 func getPassword() string {
