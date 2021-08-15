@@ -38,7 +38,16 @@ func UserAdd(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, data)
+	userData := db.User{
+		Name: data.Name,
+	}
+	createdUser, err := db.AddUser(userData)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, createdUser)
 }
 
 func UserUpdate(c *gin.Context) {

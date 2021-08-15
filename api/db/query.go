@@ -10,3 +10,8 @@ func GetUser(id uint64) (User, error) {
 
 	return user, result.Error
 }
+
+func AddUser(user User) (User, error) {
+	result := database.Create(&user)
+	return user, result.Error
+}
