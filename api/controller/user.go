@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pj-aias/matching-app-server/auth"
 	"github.com/pj-aias/matching-app-server/db"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -56,9 +56,10 @@ func UserAdd(c *gin.Context) {
 		return
 	}
 
-	// bcrypt won't work correctly if the password length is > 72
-	if len(data.Password) > 72 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Password length must be less than 72 bytes."})
+	// validate password and generate hash before inserting user data into DB
+	passwordHash, err := auth.GeneratePasswordHash(data.Password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -72,12 +73,7 @@ func UserAdd(c *gin.Context) {
 	}
 	user := fromRawData(createdUser)
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	_, err = db.AddPasswordHash(uint64(user.ID), hashedPassword)
+	_, err = db.AddPasswordHash(uint64(user.ID), passwordHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
