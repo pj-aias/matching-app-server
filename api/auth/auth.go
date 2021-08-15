@@ -20,3 +20,7 @@ func GeneratePasswordHash(password string) ([]byte, error) {
 
 	return hash, nil
 }
+
+func Validate(hash []byte, password string) error {
+	return bcrypt.CompareHashAndPassword(hash, []byte(password))
+}
