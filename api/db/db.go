@@ -3,8 +3,10 @@ package db
 import (
 	"log"
 	"os"
+	"time"
 
-	"gorm.io/driver/mysql"
+	"github.com/go-sql-driver/mysql"
+	gormMySQL "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -18,14 +20,28 @@ func TestInsert(user User) {
 }
 
 func init() {
-	user := "root"
-	password := getPassword()
-	host := "db"
-	port := "3306"
-	dbName := "service"
-	config := gorm.Config{}
+	tz, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		panic("Failed to Parse TimeZone")
+	}
 
-	database = connectDB(user, password, host, port, dbName, config)
+	config := mysql.Config{
+		User:      "root",
+		Passwd:    getPassword(),
+		Net:       "tcp",
+		Addr:      "db" + ":3306",
+		DBName:    "service",
+		ParseTime: true,
+		Loc:       tz,
+	}
+	dsn := config.FormatDSN()
+
+	conn := gormMySQL.Open(dsn)
+	database, err = gorm.Open(conn, &gorm.Config{})
+
+	if err != nil {
+		panic("Failed to open MySQL Connection")
+	}
 
 	database.Logger.LogMode(logger.Info)
 	autoMigrate(database)
@@ -51,15 +67,4 @@ func getPassword() string {
 	}
 
 	return string(buf)
-}
-
-func connectDB(user, password, host, port, dbName string, config gorm.Config) *gorm.DB {
-	dsn := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + dbName + "?parseTime=true&loc=Asia%2FTokyo"
-	db, err := gorm.Open(mysql.Open(dsn), &config)
-
-	if err != nil {
-		log.Fatal("failed to connect db:", err)
-	}
-
-	return db
 }

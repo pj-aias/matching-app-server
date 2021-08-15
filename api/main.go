@@ -8,6 +8,7 @@ import (
 
 func main() {
 	db.TestInsert(db.User{Name: "hoge"})
+
 	r := gin.Default()
 
 	r.GET("/ping", func(c *gin.Context) {
