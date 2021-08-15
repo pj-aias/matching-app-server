@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pj-aias/matching-app-server/db"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -55,17 +56,27 @@ func UserAdd(c *gin.Context) {
 		return
 	}
 
-	param := db.User{
+	userParam := db.User{
 		Username: data.Username,
 	}
-	result, err := db.AddUser(param)
+	createdUser, err := db.AddUser(userParam)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	user := fromRawData(createdUser)
 
-	createdUser := fromRawData(result)
-	c.JSON(http.StatusOK, createdUser)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	_, err = db.AddPasswordHash(uint64(user.ID), hashedPassword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, user)
 }
 
 func UserUpdate(c *gin.Context) {
