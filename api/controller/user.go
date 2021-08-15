@@ -56,6 +56,12 @@ func UserAdd(c *gin.Context) {
 		return
 	}
 
+	// bcrypt won't work correctly if the password length is > 72
+	if len(data.Password) > 72 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Password length must be less than 72 bytes."})
+		return
+	}
+
 	userParam := db.User{
 		Username: data.Username,
 	}
