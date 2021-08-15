@@ -43,7 +43,7 @@ func UserShow(c *gin.Context) {
 
 func UserAdd(c *gin.Context) {
 	type postData struct {
-		Name      string
+		Username  string
 		Password  string
 		Signature string
 	}
@@ -56,7 +56,7 @@ func UserAdd(c *gin.Context) {
 	}
 
 	param := db.User{
-		Username: data.Name,
+		Username: data.Username,
 	}
 	result, err := db.AddUser(param)
 	if err != nil {
