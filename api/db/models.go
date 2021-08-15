@@ -12,9 +12,9 @@ type User struct {
 }
 
 type PasswordHash struct {
-	ID   int
-	Hash []byte `gorm:"size:72"`
-	User User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Hash   []byte `gorm:"size:72"`
+	UserID int
+	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 func autoMigrate(database *gorm.DB) {
