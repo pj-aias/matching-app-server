@@ -51,7 +51,7 @@ func CreateToken(user_id int) string {
 		user_id,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Minute * 60).Unix(),
-			Issuer:    "makino",
+			Issuer:    "matching-app",
 		},
 	}
 
@@ -64,26 +64,25 @@ func CreateToken(user_id int) string {
 	return signed_string
 }
 
-func VerifyUser(token_value string) (user_id int) {
-	TODO Check
-	token, err := jwt.Parse(token_value, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+func VerifyUser(token string) (int, err) {
+	token, err := jwt.Parse(token, func(tk *jwt.Token) (interface{}, error) {
+		if _, ok := tk.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", tk.Header["alg"])
 		}
 
-		return verify_key, nil
+		return PublicKey, nil
 	})
 
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// All claim values seems to be float. So we must convert to int after assertion to float
-		user_id = int(claims["UserId"].(float64))
-		log.Printf("authorization complete for user %v", user_id)
+		userId = int(claims["UserId"].(float64))
+		log.Printf("authentication complete for user %v", userId)
 	} else {
-		panic("Get user_id failed")
+		return 0, errers.New("Get user_id failed")
 	}
 
 	return
@@ -163,32 +162,7 @@ func generateKeyPair(privKeyFile, pubKeyFile *os.File) (*rsa.PrivateKey, *rsa.Pu
 }
 
 func init() {
-	TODO check
-	privKeyPath := os.Getenv("SECRET_KEY")
-	privKeyFile, err := os.Open(privKeyPath)
-
-	if err == os.ErrNotExist {
-		privKeyFile, err = os.Create(privKeyPath)
-		rsa.GenerateKey(rand.Reader, 2048)
-	}
-
-	if err != nil {
-
-	} else {
-
-	}
-
-	sign_key, err = jwt.ParseRSAPrivateKeyFromPEM(secret_key)
-	if err != nil {
-		panic(err)
-	}
-
-	public_key, err := ioutil.ReadFile(os.Getenv("PUBLIC_KEY_PKCS8"))
-	if err != nil {
-		panic(err)
-	}
-
-	verify_key, err = jwt.ParseRSAPublicKeyFromPEM(public_key)
+	err := readPrivateKey()
 	if err != nil {
 		panic(err)
 	}
