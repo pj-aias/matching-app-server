@@ -7,7 +7,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -47,6 +46,7 @@ func Validate(hash []byte, password string) error {
 }
 
 func CreateToken(user_id int) string {
+	TODO check
 	claims := CustomClaims{
 		user_id,
 		jwt.StandardClaims{
@@ -65,6 +65,7 @@ func CreateToken(user_id int) string {
 }
 
 func VerifyUser(token_value string) (user_id int) {
+	TODO Check
 	token, err := jwt.Parse(token_value, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -93,7 +94,7 @@ func readPrivateKey() error {
 	pubKeyPath := os.Getenv("PUBLIC_KEY")
 	privKeyFile, err := os.Open(privKeyPath)
 
-	if err == fs.ErrNotExist {
+	if err == os.ErrNotExist {
 		// if not generated key pair yet
 		privKeyFile, err = os.Create(privKeyPath)
 		if err != nil {
@@ -144,7 +145,7 @@ func generateKeyPair(privKeyFile, pubKeyFile *os.File) (*rsa.PrivateKey, *rsa.Pu
 		return nil, nil, err
 	}
 
-	pubKeyBytes := x509.MarshalPKCS1PrivateKey(publicKey)
+	pubKeyBytes := x509.MarshalPKCS1PublicKey(publicKey)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -162,10 +163,11 @@ func generateKeyPair(privKeyFile, pubKeyFile *os.File) (*rsa.PrivateKey, *rsa.Pu
 }
 
 func init() {
+	TODO check
 	privKeyPath := os.Getenv("SECRET_KEY")
 	privKeyFile, err := os.Open(privKeyPath)
 
-	if err == fs.ErrNotExist {
+	if err == os.ErrNotExist {
 		privKeyFile, err = os.Create(privKeyPath)
 		rsa.GenerateKey(rand.Reader, 2048)
 	}
