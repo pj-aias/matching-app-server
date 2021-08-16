@@ -41,7 +41,7 @@ func GeneratePasswordHash(password string) ([]byte, error) {
 	return hash, nil
 }
 
-func Validate(hash []byte, password string) error {
+func ValidatePassword(hash []byte, password string) error {
 	return bcrypt.CompareHashAndPassword(hash, []byte(password))
 }
 
@@ -64,9 +64,7 @@ func CreateToken(userId int) (string, error) {
 	return signedToken, nil
 }
 
-func VerifyUser(tokenString string) (int, error) {
-	var userId int
-
+func VerifyToken(tokenString string) (userId int, err error) {
 	token, err := jwt.Parse(tokenString, func(tk *jwt.Token) (interface{}, error) {
 		if _, ok := tk.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", tk.Header["alg"])
