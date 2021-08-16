@@ -29,7 +29,7 @@ type CustomClaims struct {
 func GeneratePasswordHash(password string) ([]byte, error) {
 	// bcrypt won't work correctly if the password length is > 72
 	if len(password) > 72 {
-		err := errors.New("Password length must be less than 72 bytes.")
+		err := errors.New("password length must be less than 72 bytes")
 		return nil, err
 	}
 
@@ -69,7 +69,7 @@ func VerifyUser(tokenString string) (int, error) {
 
 	token, err := jwt.Parse(tokenString, func(tk *jwt.Token) (interface{}, error) {
 		if _, ok := tk.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", tk.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", tk.Header["alg"])
 		}
 
 		return PubKey, nil
@@ -84,7 +84,7 @@ func VerifyUser(tokenString string) (int, error) {
 		userId = int(claims["UserId"].(float64))
 		log.Printf("authentication complete for user %v", userId)
 	} else {
-		return 0, errors.New("Get user_id failed")
+		return 0, errors.New("get user_id failed")
 	}
 
 	return userId, nil
@@ -120,7 +120,14 @@ func readPrivateKey() error {
 	// if opened successfuly
 
 	privKeyBuf, err := ioutil.ReadAll(privKeyFile)
+	if err != nil {
+		return err
+	}
+
 	pubKeyBuf, err := ioutil.ReadAll(pubKeyFile)
+	if err != nil {
+		return err
+	}
 
 	privKey, err = jwt.ParseRSAPrivateKeyFromPEM(privKeyBuf)
 	if err != nil {
@@ -137,6 +144,10 @@ func readPrivateKey() error {
 
 func generateKeyPair(privKeyFile, pubKeyFile *os.File) (*rsa.PrivateKey, *rsa.PublicKey, error) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	publicKey := &privateKey.PublicKey
 
 	privKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
