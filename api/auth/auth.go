@@ -45,10 +45,10 @@ func Validate(hash []byte, password string) error {
 	return bcrypt.CompareHashAndPassword(hash, []byte(password))
 }
 
-func CreateToken(user_id int) string {
-	TODO check
+func CreateToken(userId int) (string, error) {
+	//TODO check
 	claims := CustomClaims{
-		user_id,
+		userId,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Minute * 60).Unix(),
 			Issuer:    "matching-app",
@@ -56,21 +56,23 @@ func CreateToken(user_id int) string {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS512, claims)
-	signed_string, err := token.SignedString(sign_key)
+	signedToken, err := token.SignedString(privKey)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	return signed_string
+	return signedToken, nil
 }
 
-func VerifyUser(token string) (int, err) {
-	token, err := jwt.Parse(token, func(tk *jwt.Token) (interface{}, error) {
+func VerifyUser(tokenString string) (int, error) {
+	var userId int
+
+	token, err := jwt.Parse(tokenString, func(tk *jwt.Token) (interface{}, error) {
 		if _, ok := tk.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", tk.Header["alg"])
 		}
 
-		return PublicKey, nil
+		return PubKey, nil
 	})
 
 	if err != nil {
@@ -82,20 +84,21 @@ func VerifyUser(token string) (int, err) {
 		userId = int(claims["UserId"].(float64))
 		log.Printf("authentication complete for user %v", userId)
 	} else {
-		return 0, errers.New("Get user_id failed")
+		return 0, errors.New("Get user_id failed")
 	}
 
-	return
+	return userId, nil
 }
 
 func readPrivateKey() error {
 	privKeyPath := os.Getenv("SECRET_KEY")
 	pubKeyPath := os.Getenv("PUBLIC_KEY")
-	privKeyFile, err := os.Open(privKeyPath)
+	privKeyFile, err1 := os.Open(privKeyPath)
+	pubKeyFile, err2 := os.Open(pubKeyPath)
 
-	if err == os.ErrNotExist {
+	if err1 == os.ErrNotExist && err2 == os.ErrNotExist {
 		// if not generated key pair yet
-		privKeyFile, err = os.Create(privKeyPath)
+		privKeyFile, err := os.Create(privKeyPath)
 		if err != nil {
 			return err
 		}
@@ -107,9 +110,11 @@ func readPrivateKey() error {
 		privKey, PubKey, err = generateKeyPair(privKeyFile, pubKeyFile)
 
 		return err
-	} else if err != nil {
+	} else if err1 != nil {
 		// normal error
-		return err
+		return err1
+	} else if err2 != nil {
+		return err2
 	}
 
 	// if opened successfuly
