@@ -96,7 +96,7 @@ func readPrivateKey() error {
 	privKeyFile, err1 := os.Open(privKeyPath)
 	pubKeyFile, err2 := os.Open(pubKeyPath)
 
-	if err1 == os.ErrNotExist && err2 == os.ErrNotExist {
+	if errors.Is(err1, os.ErrNotExist) && errors.Is(err2, os.ErrNotExist) {
 		// if not generated key pair yet
 		privKeyFile, err := os.Create(privKeyPath)
 		if err != nil {
