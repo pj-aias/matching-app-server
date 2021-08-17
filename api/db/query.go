@@ -14,6 +14,14 @@ func AddUser(user User) (User, error) {
 	return user, result.Error
 }
 
+func LookupUser(username string) (User, error) {
+	user := User{}
+	user.Username = username
+	result := database.Take(&user)
+
+	return user, result.Error
+}
+
 func GetPasswordHash(userId uint64) (PasswordHash, error) {
 	hash := PasswordHash{UserID: int(userId)}
 	result := database.Take(&hash)
