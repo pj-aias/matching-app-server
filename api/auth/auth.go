@@ -64,7 +64,7 @@ func CreateToken(userId int) (string, error) {
 	return signedToken, nil
 }
 
-func VerifyToken(tokenString string) (userId int, err error) {
+func ValidateToken(tokenString string) (userId int, err error) {
 	token, err := jwt.Parse(tokenString, func(tk *jwt.Token) (interface{}, error) {
 		if _, ok := tk.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", tk.Header["alg"])
