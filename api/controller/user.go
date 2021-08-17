@@ -113,3 +113,40 @@ func UserUpdate(c *gin.Context) {
 
 	c.JSON(http.StatusOK, data)
 }
+
+func Login(c *gin.Context) {
+	type postData struct {
+		Username  string
+		Password  string
+		Signature string
+	}
+	type responseData struct {
+		User User `json:"user"`
+		Token string `json:"token"`
+	}
+
+	data := postData{}
+
+	if err := c.BindJSON(&data); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := db.LookupUser(data.Username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := auth.CreateToken(int(user.ID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	response := responseData {
+		User: fromRawData(user),
+		Token: token,
+	}
+
+	c.JSON(http.StatusOK, response)
+}

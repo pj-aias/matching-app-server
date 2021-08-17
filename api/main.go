@@ -10,6 +10,7 @@ import (
 func main() {
 	r := gin.Default()
 	r.POST("user", controller.UserAdd)
+	r.POST("login", controller.Login)
 
 	authRequired := r.Group("/")
 	authRequired.Use(middleware.AuthorizeToken())
