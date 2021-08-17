@@ -48,6 +48,10 @@ func UserAdd(c *gin.Context) {
 		Password  string
 		Signature string
 	}
+	type responseData struct {
+		User User `json:"user"`
+		Token string `json:"token"`
+	}
 
 	data := postData{}
 
@@ -76,9 +80,20 @@ func UserAdd(c *gin.Context) {
 	_, err = db.AddPasswordHash(uint64(user.ID), passwordHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	token, err := auth.CreateToken(int(user.ID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	response := responseData {
+		User: user,
+		Token: token,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func UserUpdate(c *gin.Context) {
