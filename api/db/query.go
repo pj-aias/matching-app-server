@@ -56,16 +56,23 @@ func CreateFollow(srcUserId, dstUserId uint) (Follow, error) {
 	follow := Follow {}
 
 	err := database.Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Find(&follow).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return Follow{}, err
-	}
 
-	follow := Follow {
-		SourceUserID: int(srcUserId),
-		DestUserID: int(dstUserId),
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		// not followed yet
+		// create follow
+		follow = Follow {
+			SourceUserID: int(srcUserId),
+			DestUserID: int(dstUserId),
+		}
+		result := database.Create(&follow)
+		return follow, result.Error
+	} else if err == nil {
+		// already follows
+		return follow, nil
+	} else {
+		// some error occured
+		return Follow{}, nil
 	}
-	result := database.Create(&follow)
-	return follow, result.Error
 }
 
 func DoesFollow(srcUserId, dstUserId uint) (bool, error) {
