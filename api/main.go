@@ -19,6 +19,7 @@ func main() {
 		authRequired.GET("user/:id", controller.UserShow)
 		authRequired.PATCH("user", controller.UserUpdate)
 
+		authRequired.GET("follow/:id", controller.ShowFollow)
 		authRequired.POST("follow/:id", controller.FollowUser)
 	}
 
