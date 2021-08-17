@@ -4,17 +4,21 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/pj-aias/matching-app-server/controller"
-	"github.com/pj-aias/matching-app-server/db"
+	"github.com/pj-aias/matching-app-server/controller/middleware"
 )
 
 func main() {
-	db.TestInsert(db.User{Name: "hoge"})
-
 	r := gin.Default()
-
-	r.GET("user/:id", controller.UserShow)
 	r.POST("user", controller.UserAdd)
-	r.PATCH("user", controller.UserUpdate)
+	r.POST("login", controller.Login)
+
+	authRequired := r.Group("/")
+	authRequired.Use(middleware.AuthorizeToken())
+
+	{
+		authRequired.GET("user/:id", controller.UserShow)
+		authRequired.PATCH("user", controller.UserUpdate)
+	}
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

@@ -8,6 +8,10 @@ services:
         volumes:
             - ./api:/app
             - go:/go
+            - ./secrets/keys:/run/keys
+        environment:
+            - SECRET_KEY=/run/keys/private.pem
+            - PUBLIC_KEY=/run/keys/public.pem
         secrets:
             - mysql_password
         depends_on:
@@ -27,4 +31,4 @@ volumes:
 
 secrets:
     mysql_password:
-        file: ./mysql_password.txt
+        file: ./secrets/mysql_password.txt

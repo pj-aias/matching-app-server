@@ -13,3 +13,28 @@ func AddUser(user User) (User, error) {
 	result := database.Create(&user)
 	return user, result.Error
 }
+
+func LookupUser(username string) (User, error) {
+	user := User{}
+	user.Username = username
+	result := database.Take(&user)
+
+	return user, result.Error
+}
+
+func GetPasswordHash(userId uint64) (PasswordHash, error) {
+	hash := PasswordHash{UserID: int(userId)}
+	result := database.Take(&hash)
+
+	return hash, result.Error
+}
+
+func AddPasswordHash(userId uint64, hash []byte) (PasswordHash, error) {
+	hashData := PasswordHash{
+		UserID: int(userId),
+		Hash:   hash,
+	}
+
+	result := database.Create(&hashData)
+	return hashData, result.Error
+}
