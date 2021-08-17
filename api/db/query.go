@@ -1,5 +1,11 @@
 package db
 
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
+
 func GetUser(id uint64) (User, error) {
 	user := User{}
 	user.ID = uint(id)
@@ -44,4 +50,39 @@ func AddPasswordHash(userId uint64, hash []byte) (PasswordHash, error) {
 
 	result := database.Create(&hashData)
 	return hashData, result.Error
+}
+
+func CreateFollow(srcUserId, dstUserId uint) (Follow, error) {
+	follow := Follow {
+		SourceUserID: int(srcUserId),
+		DestUserID: int(dstUserId),
+	}
+
+	result := database.Create(&follow)
+	return follow, result.Error
+}
+
+func DoesFollow(srcUserId, dstUserId uint) (bool, error) {
+	follow := Follow {
+		SourceUserID: int(srcUserId),
+		DestUserID: int(dstUserId),
+	}
+
+	result := database.Take(&follow)
+
+	if err := result.Error; err == nil {
+		// following
+		return true, nil
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+		// not following
+		return false, nil
+	} else {
+		// an error occured
+		return false, err
+	}
+}
+
+func DestroyFollow(srcUserId, dstUserId uint) (error) {
+	result := database.Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Delete(&Follow{})
+	return result.Error
 }
