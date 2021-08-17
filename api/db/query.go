@@ -52,7 +52,7 @@ func AddPasswordHash(userId uint64, hash []byte) (PasswordHash, error) {
 	return hashData, result.Error
 }
 
-func CreateFollow(srcUserId, dstUserId uint) (&Follow, error) {
+func CreateFollow(srcUserId, dstUserId uint) (*Follow, error) {
 	follow := Follow {}
 
 	err := database.Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Find(&follow).Error

@@ -18,6 +18,8 @@ func main() {
 	{
 		authRequired.GET("user/:id", controller.UserShow)
 		authRequired.PATCH("user", controller.UserUpdate)
+
+		authRequired.POST("follow/:id", controller.FollowUser)
 	}
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
