@@ -97,5 +97,10 @@ func DoesFollow(srcUserId, dstUserId uint) (bool, error) {
 
 func DestroyFollow(srcUserId, dstUserId uint) (error) {
 	result := database.Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Delete(&Follow{})
-	return result.Error
+	if err := result.Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		// not following
+		return nil
+	} else {
+		return err
+	}
 }
