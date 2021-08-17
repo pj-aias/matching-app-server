@@ -22,8 +22,9 @@ func LookupUser(username string) (User, error) {
 	return user, result.Error
 }
 
-func UpdateUser(user User) (User, error) {
+func UpdateUser(userId uint, user User) (User, error) {
 	outUser := User{}
+	outUser.ID = userId
 	result := database.Model(&outUser).Updates(&user)
 	return outUser, result.Error
 }
