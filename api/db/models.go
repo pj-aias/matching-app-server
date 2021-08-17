@@ -17,7 +17,16 @@ type PasswordHash struct {
 	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
+type Follow struct {
+	gorm.Model
+	SourceUserID int
+	SourceUser   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	DestUserID   int
+	DestUser     User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+}
+
 func autoMigrate(database *gorm.DB) {
 	database.AutoMigrate(&User{})
 	database.AutoMigrate(&PasswordHash{})
+	database.AutoMigrate(&Follow{})
 }
