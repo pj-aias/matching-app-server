@@ -22,6 +22,13 @@ func LookupUser(username string) (User, error) {
 	return user, result.Error
 }
 
+func UpdateUser(userId uint, user User) (User, error) {
+	outUser := User{}
+	outUser.ID = userId
+	result := database.Model(&outUser).Updates(&user)
+	return outUser, result.Error
+}
+
 func GetPasswordHash(userId uint64) (PasswordHash, error) {
 	hash := PasswordHash{UserID: int(userId)}
 	result := database.Take(&hash)

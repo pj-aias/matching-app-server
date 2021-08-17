@@ -98,10 +98,8 @@ func UserAdd(c *gin.Context) {
 
 func UserUpdate(c *gin.Context) {
 	type updateData struct {
-		Name      *string
-		Avatar    *string
-		Bio       *string
-		Signature string
+		Avatar    string `json:",omitempty"`
+		Bio       string `json:",omitempty"`
 	}
 
 	data := updateData{}
@@ -111,7 +109,29 @@ func UserUpdate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, data)
+	userId, ok := c.MustGet("userId").(int)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "invalid user id")
+		return
+	}
+
+	userData := db.User{}
+	userData.Avatar = data.Avatar
+	userData.Bio = data.Bio
+
+	_, err := db.UpdateUser(uint(userId), userData)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	user, err := db.GetUser(uint64(userId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, fromRawData(user))
 }
 
 func Login(c *gin.Context) {
