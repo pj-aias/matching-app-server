@@ -91,10 +91,9 @@ func ValidateToken(tokenString string) (userId int, err error) {
 func readPrivateKey() error {
 	privKeyPath := os.Getenv("SECRET_KEY")
 	pubKeyPath := os.Getenv("PUBLIC_KEY")
-	privKeyFile, err1 := os.Open(privKeyPath)
-	pubKeyFile, err2 := os.Open(pubKeyPath)
+	privKeyFile, err := os.Open(privKeyPath)
 
-	if errors.Is(err1, os.ErrNotExist) && errors.Is(err2, os.ErrNotExist) {
+	if errors.Is(err, os.ErrNotExist) {
 		// if not generated key pair yet
 		privKeyFile, err := os.Create(privKeyPath)
 		if err != nil {
@@ -108,11 +107,9 @@ func readPrivateKey() error {
 		privKey, PubKey, err = generateKeyPair(privKeyFile, pubKeyFile)
 
 		return err
-	} else if err1 != nil {
+	} else if err != nil {
 		// normal error
-		return fmt.Errorf("failed to read privkey: %v", err1)
-	} else if err2 != nil {
-		return fmt.Errorf("failed to read pubkey: %v", err2)
+		return fmt.Errorf("failed to read privkey: %v", err)
 	}
 
 	// if opened successfuly
@@ -122,20 +119,12 @@ func readPrivateKey() error {
 		return err
 	}
 
-	pubKeyBuf, err := ioutil.ReadAll(pubKeyFile)
-	if err != nil {
-		return err
-	}
-
 	privKey, err = jwt.ParseRSAPrivateKeyFromPEM(privKeyBuf)
 	if err != nil {
 		return fmt.Errorf("failed to parse RSA private key: %v", err)
 	}
 
-	PubKey, err = jwt.ParseRSAPublicKeyFromPEM(pubKeyBuf)
-	if err != nil {
-		return fmt.Errorf("failed to parse RSA public key: %v", err)
-	}
+	PubKey = &privKey.PublicKey
 
 	return nil
 }
