@@ -98,11 +98,11 @@ func readPrivateKey() error {
 		// if not generated key pair yet
 		privKeyFile, err := os.Create(privKeyPath)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create private key file: %v", err)
 		}
 		pubKeyFile, err := os.Create(pubKeyPath)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create public key file: %v", err)
 		}
 
 		privKey, PubKey, err = generateKeyPair(privKeyFile, pubKeyFile)
@@ -110,9 +110,9 @@ func readPrivateKey() error {
 		return err
 	} else if err1 != nil {
 		// normal error
-		return err1
+		return fmt.Errorf("failed to read privkey: %v", err1)
 	} else if err2 != nil {
-		return err2
+		return fmt.Errorf("failed to read pubkey: %v", err2)
 	}
 
 	// if opened successfuly
@@ -129,12 +129,12 @@ func readPrivateKey() error {
 
 	privKey, err = jwt.ParseRSAPrivateKeyFromPEM(privKeyBuf)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse RSA private key: %v", err)
 	}
 
 	PubKey, err = jwt.ParseRSAPublicKeyFromPEM(pubKeyBuf)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse RSA public key: %v", err)
 	}
 
 	return nil
@@ -163,7 +163,7 @@ func generateKeyPair(privKeyFile, pubKeyFile *os.File) (*rsa.PrivateKey, *rsa.Pu
 		return nil, nil, err
 	}
 	pubKeyBlock := &pem.Block{
-		Type:  "PUBLIC KEY",
+		Type:  "RSA PUBLIC KEY",
 		Bytes: pubKeyBytes,
 	}
 	err = pem.Encode(pubKeyFile, pubKeyBlock)
