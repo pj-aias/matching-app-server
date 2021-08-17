@@ -53,11 +53,17 @@ func AddPasswordHash(userId uint64, hash []byte) (PasswordHash, error) {
 }
 
 func CreateFollow(srcUserId, dstUserId uint) (Follow, error) {
+	follow := Follow {}
+
+	err := database.Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Find(&follow).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return Follow{}, err
+	}
+
 	follow := Follow {
 		SourceUserID: int(srcUserId),
 		DestUserID: int(dstUserId),
 	}
-
 	result := database.Create(&follow)
 	return follow, result.Error
 }
