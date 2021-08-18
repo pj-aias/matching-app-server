@@ -55,8 +55,15 @@ func UserAdd(c *gin.Context) {
 
 	data := postData{}
 
+	// todo empty signature passes
 	if err := c.BindJSON(&data); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	oldUser, _ := db.LookupUser(data.Username)
+	if oldUser != (db.User{}) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "a user with that username already exists"})
 		return
 	}
 
