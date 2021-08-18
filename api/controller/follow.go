@@ -109,7 +109,7 @@ func ShowFollowees(c *gin.Context) {
 		return
 	}
 
-	followees, err := follows2users(followings)
+	followees, err := follows2users(followings, true)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -139,7 +139,7 @@ func ShowFollowers(c *gin.Context) {
 		return
 	}
 
-	followers, err := follows2users(followeds)
+	followers, err := follows2users(followeds, false)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -170,11 +170,17 @@ func getFollowFromDB(source, target uint) (Follow, error) {
 	}, nil
 }
 
-func follows2users(follows []db.Follow) ([]User, error) {
+func follows2users(follows []db.Follow, forDest bool) ([]User, error) {
 	count := len(follows)
 	usersId := make([]uint, count)
-	for i, f := range follows {
-		usersId[i] = uint(f.DestUserID)
+	if forDest {
+		for i, f := range follows {
+			usersId[i] = uint(f.DestUserID)
+		}
+	} else {
+		for i, f := range follows {
+			usersId[i] = uint(f.SourceUserID)
+		}
 	}
 
 	dbUsers, err := db.GetUsers(usersId)

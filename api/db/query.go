@@ -37,11 +37,8 @@ func UpdateUser(userId uint, user User) (User, error) {
 
 func GetUsers(usersId []uint) ([]User, error) {
 	users := make([]User, len(usersId))
-	for i := range users {
-		users[i].ID = usersId[i]
-	}
 
-	result := database.Model(&User{}).Find(&users)
+	result := database.Find(&users, usersId)
 	return users, result.Error
 }
 
@@ -65,24 +62,26 @@ func AddPasswordHash(userId uint64, hash []byte) (PasswordHash, error) {
 func CreateFollow(srcUserId, dstUserId uint) (*Follow, error) {
 	follow := Follow {}
 
-	err := database.Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Find(&follow).Error
+	var count int64
+	err := database.Model(&Follow{}).Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Count(&count).Error
 
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		// not followed yet
-		// create follow
-		follow = Follow {
-			SourceUserID: int(srcUserId),
-			DestUserID: int(dstUserId),
-		}
-		result := database.Create(&follow)
-		return &follow, result.Error
-	} else if err == nil {
-		// already follows
-		return nil, nil
-	} else {
-		// some error occured
+	if err != nil {
 		return nil, err
 	}
+
+	if count > 0 {
+		// already follows
+		return nil, nil
+	}
+
+	// not followed yet
+	// create follow
+	follow = Follow {
+		SourceUserID: int(srcUserId),
+		DestUserID: int(dstUserId),
+	}
+	result := database.Create(&follow)
+	return &follow, result.Error
 }
 
 func DoesFollow(srcUserId, dstUserId uint) (bool, error) {
@@ -122,7 +121,7 @@ func GetFollowing(source uint) ([]Follow, error) {
 }
 
 func GetFollowed(target uint) ([]Follow, error) {
-	followed := make([]Follow, 16)
+	followed := []Follow{}
 	result := database.Where("dest_user_id = ?", target).Find(&followed)
 	return followed, result.Error
 }
