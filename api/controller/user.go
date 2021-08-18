@@ -1,12 +1,14 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pj-aias/matching-app-server/auth"
 	"github.com/pj-aias/matching-app-server/db"
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -61,9 +63,13 @@ func UserAdd(c *gin.Context) {
 		return
 	}
 
-	oldUser, _ := db.LookupUser(data.Username)
-	if oldUser != (db.User{}) {
+	_, err := db.LookupUser(data.Username)
+	if err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "a user with that username already exists"})
+		return
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		// normal error
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
