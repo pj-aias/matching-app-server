@@ -29,6 +29,7 @@ type Post struct {
 	gorm.Model
 	UserID int
 	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Content string
 }
 
 func autoMigrate(database *gorm.DB) {

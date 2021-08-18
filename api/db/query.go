@@ -125,3 +125,11 @@ func GetFollowed(target uint) ([]Follow, error) {
 	result := database.Where("dest_user_id = ?", target).Find(&followed)
 	return followed, result.Error
 }
+
+func CreatePost(userId uint, content string) (Post, error) {
+	post := Post{}
+	post.Content = content
+	post.UserID = int(userId)
+	err := database.Create(&post).Error
+	return post, err
+}
