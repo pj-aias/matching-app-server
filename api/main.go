@@ -26,6 +26,7 @@ func main() {
 		authRequired.GET("followees", controller.ShowFollowees)
 
 		authRequired.POST("post", controller.PostAdd)
+		authRequired.GET("post/recent", controller.RecentPosts)
 		authRequired.GET("post/:id", controller.ShowPost)
 	}
 

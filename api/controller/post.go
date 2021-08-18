@@ -20,6 +20,10 @@ type PostResponse struct {
 	Post Post `json:"post"`
 }
 
+type PostsResponse struct {
+	Posts []Post `json:"posts"`
+}
+
 func fromDBPost(raw db.Post) Post {
 	if raw.User == (db.User{}) {
 		raw.User, _ = db.GetUser(uint64(raw.UserID))
@@ -30,6 +34,16 @@ func fromDBPost(raw db.Post) Post {
 		User:    fromRawData(raw.User),
 		Content: raw.Content,
 	}
+}
+
+func fromDBPosts(rawPosts []db.Post) []Post {
+	posts := make([]Post, len(rawPosts))
+
+	for i, p := range rawPosts {
+		posts[i] = fromDBPost(p)
+	}
+
+	return posts
 }
 
 func PostAdd(c *gin.Context) {
@@ -87,4 +101,29 @@ func ShowPost(c *gin.Context) {
 
 	response := PostResponse{post}
 	c.JSON(http.StatusOK, response)
+}
+
+func RecentPosts(c *gin.Context) {
+	type param struct {
+		Count int
+	}
+
+	data := param{}
+
+	if err := c.BindJSON(&data); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	count := data.Count
+
+	recentPosts, err := db.GetRecentPosts(count)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	posts := PostsResponse{fromDBPosts(recentPosts)}
+
+	c.JSON(http.StatusOK, posts)
 }
