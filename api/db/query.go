@@ -141,6 +141,17 @@ func GetPost(id uint) (Post, error) {
 	return post, err
 }
 
+func UpdatePost(data Post) (Post, error) {
+	// can only update content
+	data_ := Post{}
+	data_.ID = data.ID
+	data_.Content = data.Content
+
+	outPost := Post{}
+	result := database.Model(&outPost).Updates(&data_)
+	return outPost, result.Error
+}
+
 func GetRecentPosts(count int) ([]Post, error) {
 	posts := make([]Post, count)
 	err := database.Limit(count).Order("created_at").Find(&posts).Error
