@@ -158,9 +158,20 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	hash, err := db.GetPasswordHash(uint64(user.ID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if err := auth.ValidatePassword(hash.Hash, data.Password); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
 	token, err := auth.CreateToken(int(user.ID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	response := responseData {

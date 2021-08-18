@@ -23,7 +23,7 @@ func AddUser(user User) (User, error) {
 func LookupUser(username string) (User, error) {
 	user := User{}
 	user.Username = username
-	result := database.Take(&user)
+	result := database.Where("username = ?", username).First(&user)
 
 	return user, result.Error
 }
@@ -88,12 +88,9 @@ func CreateFollow(srcUserId, dstUserId uint) (*Follow, error) {
 }
 
 func DoesFollow(srcUserId, dstUserId uint) (bool, error) {
-	follow := Follow {
-		SourceUserID: int(srcUserId),
-		DestUserID: int(dstUserId),
-	}
+	follow := Follow{}
 
-	result := database.Take(&follow)
+	result := database.Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Take(&follow)
 
 	if err := result.Error; err == nil {
 		// following
