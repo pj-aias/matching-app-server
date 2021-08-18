@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pj-aias/matching-app-server/db"
-	"gorm.io/gorm"
 )
 
 type Follow struct {
@@ -93,7 +92,7 @@ func UnfollowUser(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-type Follwees struct {
+type Followees struct {
 	Users []User `json:"followees"`
 }
 
@@ -104,13 +103,23 @@ func ShowFollowees(c *gin.Context) {
 		return
 	}
 
-	followings, err := db.GetFollowing(source)
+	followings, err := db.GetFollowing(uint(source))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	followees := 
+	followees, err := follows2users(followings)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response := Followees{
+		Users: followees,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func getFollowFromDB(source, target uint) (Follow, error) {
@@ -131,11 +140,11 @@ func getFollowFromDB(source, target uint) (Follow, error) {
 	}, nil
 }
 
-func follows2users(follows []Follow) ([]User, err) {
+func follows2users(follows []db.Follow) ([]User, error) {
 	count := len(follows)
 	usersId := make([]uint, count)
 	for i, f := range follows {
-		usersId[i] = f.Target
+		usersId[i] = uint(f.DestUserID)
 	}
 
 	dbUsers, err := db.GetUsers(usersId)
