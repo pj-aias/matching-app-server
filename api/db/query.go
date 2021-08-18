@@ -137,6 +137,6 @@ func CreatePost(userId uint, content string) (Post, error) {
 func GetPost(id uint) (Post, error) {
 	post := Post{}
 	post.ID = id
-	err := database.Find(&post).Error
+	err := database.Take(&post).Error
 	return post, err
 }

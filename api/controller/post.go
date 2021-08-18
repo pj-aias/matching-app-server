@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pj-aias/matching-app-server/db"
@@ -66,8 +67,8 @@ func PostAdd(c *gin.Context) {
 }
 
 func ShowPost(c *gin.Context) {
-	var id int
-	if err := c.BindJSON(&id); err != nil {
+	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
