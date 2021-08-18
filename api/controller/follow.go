@@ -122,6 +122,36 @@ func ShowFollowees(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+type Followers struct {
+	Users []User `json:"followers"`
+}
+
+func ShowFollowers(c *gin.Context) {
+	source, ok := c.MustGet("userId").(int)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "invalid user id")
+		return
+	}
+
+	followeds, err := db.GetFollowed(uint(source))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	followers, err := follows2users(followeds)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response := Followers{
+		Users: followers,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
 func getFollowFromDB(source, target uint) (Follow, error) {
 	following, err := db.DoesFollow(source, target)
 	if err != nil {

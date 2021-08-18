@@ -22,6 +22,7 @@ func main() {
 		authRequired.GET("follow/:id", controller.ShowFollow)
 		authRequired.POST("follow/:id", controller.FollowUser)
 		authRequired.DELETE("follow/:id", controller.UnfollowUser)
+		authRequired.GET("followers", controller.ShowFollowers)
 		authRequired.GET("followees", controller.ShowFollowees)
 	}
 
