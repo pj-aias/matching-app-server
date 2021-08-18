@@ -24,6 +24,8 @@ func main() {
 		authRequired.DELETE("follow/:id", controller.UnfollowUser)
 		authRequired.GET("followers", controller.ShowFollowers)
 		authRequired.GET("followees", controller.ShowFollowees)
+
+		authRequired.POST("post", controller.PostAdd)
 	}
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
