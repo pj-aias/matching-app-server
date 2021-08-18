@@ -141,15 +141,16 @@ func GetPost(id uint) (Post, error) {
 	return post, err
 }
 
-func UpdatePost(data Post) (Post, error) {
+func UpdatePost(id uint, content string) (Post, error) {
 	// can only update content
-	data_ := Post{}
-	data_.ID = data.ID
-	data_.Content = data.Content
+	data := Post{}
+	data.Content = content
 
 	outPost := Post{}
-	result := database.Model(&outPost).Updates(&data_)
-	return outPost, result.Error
+	outPost.ID = id
+
+	err := database.Model(&outPost).Updates(&data).Error
+	return outPost, err
 }
 
 func GetRecentPosts(count int) ([]Post, error) {

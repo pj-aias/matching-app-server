@@ -163,11 +163,7 @@ func UpdatePostContent(c *gin.Context) {
 		return
 	}
 
-	updateData := db.Post{}
-	updateData.ID = uint(id)
-	updateData.Content = data.Content
-
-	updatedPost, err := db.UpdatePost(updateData)
+	updatedPost, err := db.UpdatePost(uint(id), data.Content)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
