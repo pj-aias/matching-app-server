@@ -35,6 +35,16 @@ func UpdateUser(userId uint, user User) (User, error) {
 	return outUser, result.Error
 }
 
+func GetUsers(usersId []uint) ([]User, error) {
+	users := make([]User, len(usersId))
+	for i := range users {
+		users[i].ID = usersId[i]
+	}
+
+	result := database.Model(&User{}).Find(&users)
+	return users, result.Error
+}
+
 func GetPasswordHash(userId uint64) (PasswordHash, error) {
 	hash := PasswordHash{UserID: int(userId)}
 	result := database.Take(&hash)
