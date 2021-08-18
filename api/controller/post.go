@@ -54,6 +54,14 @@ func PostAdd(c *gin.Context) {
 		return
 	}
 
+	if createdPost.User == (db.User{}) {
+		createdPost.User, err = db.GetUser(uint64(userId))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
 	post := fromDBPost(createdPost)
 	response := PostResponse{post}
 	c.JSON(http.StatusOK, response)
