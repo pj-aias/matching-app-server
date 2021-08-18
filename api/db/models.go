@@ -6,7 +6,7 @@ import (
 
 type User struct {
 	gorm.Model
-	Username string `gorm:"size:32"`
+	Username string `gorm:"size:32,unique"`
 	Avatar   string `gorm:"size:255"`
 	Bio      string `gorm:"size:255"`
 }
