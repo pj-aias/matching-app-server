@@ -1,16 +1,18 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pj-aias/matching-app-server/db"
+	"gorm.io/gorm"
 )
 
 type Post struct {
-	Id      uint    `json:"id"`
-	User    User    `json:"user"`
-	Content string  `json:"content"`
+	Id      uint   `json:"id"`
+	User    User   `json:"user"`
+	Content string `json:"content"`
 }
 
 type PostResponse struct {
@@ -18,9 +20,13 @@ type PostResponse struct {
 }
 
 func fromDBPost(raw db.Post) Post {
+	if raw.User == (db.User{}) {
+		raw.User, _ = db.GetUser(uint64(raw.UserID))
+	}
+
 	return Post{
-		Id: raw.ID,
-		User: fromRawData(raw.User),
+		Id:      raw.ID,
+		User:    fromRawData(raw.User),
 		Content: raw.Content,
 	}
 }
@@ -54,15 +60,30 @@ func PostAdd(c *gin.Context) {
 		return
 	}
 
-	if createdPost.User == (db.User{}) {
-		createdPost.User, err = db.GetUser(uint64(userId))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
+	post := fromDBPost(createdPost)
+	response := PostResponse{post}
+	c.JSON(http.StatusOK, response)
+}
+
+func ShowPost(c *gin.Context) {
+	var id int
+	if err := c.BindJSON(&id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	post := fromDBPost(createdPost)
+	rawPost, err := db.GetPost(uint(id))
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error})
+		return
+	}
+
+	post := fromDBPost(rawPost)
+
 	response := PostResponse{post}
 	c.JSON(http.StatusOK, response)
 }
