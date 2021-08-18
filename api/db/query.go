@@ -153,6 +153,13 @@ func UpdatePost(id uint, content string) (Post, error) {
 	return outPost, err
 }
 
+func DestroyPost(id uint) error {
+	data := Post{}
+	data.ID = id
+	err := database.Delete(&data).Error
+	return err
+}
+
 func GetRecentPosts(count int) ([]Post, error) {
 	posts := make([]Post, count)
 	err := database.Limit(count).Order("created_at").Find(&posts).Error
