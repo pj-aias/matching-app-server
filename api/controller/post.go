@@ -145,6 +145,24 @@ func UpdatePostContent(c *gin.Context) {
 		return
 	}
 
+	userId, ok := c.MustGet("userId").(int)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "invalid user id")
+		return
+	}
+
+
+	old, err := db.GetPost(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+		return
+	}
+
+	if old.UserID != userId {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "you cannot update a post that was created by other users"})
+		return
+	}
+
 	updateData := db.Post{}
 	updateData.ID = uint(id)
 	updateData.Content = data.Content
