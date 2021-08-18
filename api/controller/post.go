@@ -127,3 +127,36 @@ func RecentPosts(c *gin.Context) {
 
 	c.JSON(http.StatusOK, posts)
 }
+
+func UpdatePostContent(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	type param struct {
+		Content string
+	}
+
+	data := param{}
+	if err := c.BindJSON(&data); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updateData := db.Post{}
+	updateData.ID = uint(id)
+	updateData.Content = data.Content
+
+	updatedPost, err := db.UpdatePost(updateData)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	post := fromDBPost(updatedPost)
+	response := PostResponse{post}
+
+	c.JSON(http.StatusOK, response)
+}
