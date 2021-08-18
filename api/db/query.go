@@ -120,3 +120,9 @@ func GetFollowing(source uint) ([]Follow, error) {
 	result := database.Where("source_user_id = ?", source).Find(&following)
 	return following, result.Error
 }
+
+func GetFollowed(target uint) ([]Follow, error) {
+	followed := make([]Follow, 16)
+	result := database.Where("dest_user_id = ?", target).Find(&followed)
+	return followed, result.Error
+}
