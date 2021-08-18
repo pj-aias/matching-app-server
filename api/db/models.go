@@ -25,8 +25,15 @@ type Follow struct {
 	DestUser     User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
+type Post struct {
+	gorm.Model
+	UserID int
+	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+}
+
 func autoMigrate(database *gorm.DB) {
 	database.AutoMigrate(&User{})
 	database.AutoMigrate(&PasswordHash{})
 	database.AutoMigrate(&Follow{})
+	database.AutoMigrate(&Post{})
 }
