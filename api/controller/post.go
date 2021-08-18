@@ -174,3 +174,37 @@ func UpdatePostContent(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+func DeletePost(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userId, ok := c.MustGet("userId").(int)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "invalid user id")
+		return
+	}
+
+
+	target, err := db.GetPost(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+		return
+	}
+
+	if target.UserID != userId {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "you cannot update a post that was created by other users"})
+		return
+	}
+
+	err = db.DestroyPost(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
