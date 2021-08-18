@@ -140,3 +140,9 @@ func GetPost(id uint) (Post, error) {
 	err := database.Take(&post).Error
 	return post, err
 }
+
+func GetRecentPosts(count int) ([]Post, error) {
+	posts := make([]Post, count)
+	err := database.Limit(count).Order("created_at").Find(&posts).Error
+	return posts, err
+}
