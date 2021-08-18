@@ -104,3 +104,9 @@ func DestroyFollow(srcUserId, dstUserId uint) (error) {
 		return err
 	}
 }
+
+func GetFollowing(source uint) ([]Follow, error) {
+	following := make([]Follow, 16)
+	result := database.Where("source_user_id = ?", source).Find(&following)
+	return following, result.Error
+}
