@@ -171,8 +171,7 @@ func getFollowFromDB(source, target uint) (Follow, error) {
 }
 
 func follows2users(follows []db.Follow, forDest bool) ([]User, error) {
-	count := len(follows)
-	usersId := make([]uint, count)
+	usersId := make([]uint, len(follows))
 	if forDest {
 		for i, f := range follows {
 			usersId[i] = uint(f.DestUserID)
@@ -188,7 +187,7 @@ func follows2users(follows []db.Follow, forDest bool) ([]User, error) {
 		return nil, err
 	}
 
-	users := make([]User, count)
+	users := make([]User, len(dbUsers))
 	for i, u := range dbUsers {
 		users[i] = fromRawData(u)
 	}

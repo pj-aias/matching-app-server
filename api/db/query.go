@@ -37,6 +37,9 @@ func UpdateUser(userId uint, user User) (User, error) {
 
 func GetUsers(usersId []uint) ([]User, error) {
 	users := make([]User, len(usersId))
+	if len(usersId) <= 0 {
+		return users, nil
+	}
 
 	result := database.Find(&users, usersId)
 	return users, result.Error
