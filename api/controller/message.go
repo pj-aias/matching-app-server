@@ -10,43 +10,44 @@ import (
 	"gorm.io/gorm"
 )
 
-type Post struct {
-	Id      uint   `json:"id"`
-	User    User   `json:"user"`
-	Content string `json:"content"`
+type Message struct {
+	Id         uint   `json:"id"`
+	ChatroomId uint   `json:"chatroom_id"`
+	User       User   `json:"user"`
+	Content    string `json:"content"`
 }
 
-type PostResponse struct {
-	Post Post `json:"post"`
+type MessageResponse struct {
+	Message Message `json:"message"`
 }
 
-type PostsResponse struct {
-	Posts []Post `json:"posts"`
+type MessagesResponse struct {
+	Message []Message `json:"messages"`
 }
 
-func fromDBPost(raw db.Post) Post {
+func fromDBMessage(raw db.Message) Message {
 	if raw.User == (db.User{}) {
 		raw.User, _ = db.GetUser(uint64(raw.UserID))
 	}
 
-	return Post{
+	return Message{
 		Id:      raw.ID,
 		User:    fromRawData(raw.User),
 		Content: raw.Content,
 	}
 }
 
-func fromDBPosts(rawPosts []db.Post) []Post {
-	posts := make([]Post, len(rawPosts))
+func fromDBMessages(rawMessages []db.Message) []Message {
+	messages := make([]Message, len(rawMessages))
 
-	for i, p := range rawPosts {
-		posts[i] = fromDBPost(p)
+	for i, m := range rawMessages {
+		messages[i] = fromDBMessage(m)
 	}
 
-	return posts
+	return messages
 }
 
-func PostAdd(c *gin.Context) {
+func AddMessage(c *gin.Context) {
 	type postData struct {
 		Content string
 	}
@@ -64,30 +65,36 @@ func PostAdd(c *gin.Context) {
 		return
 	}
 
+	roomId, err := strconv.ParseUint(c.Param("roomId"), 0, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	if data.Content == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "empty content is not allowed"})
 		return
 	}
 
-	createdPost, err := db.CreatePost(uint(userId), data.Content)
+	createdPost, err := db.CreateMessage(uint(userId), uint(roomId), data.Content)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	post := fromDBPost(createdPost)
-	response := PostResponse{post}
+	post := fromDBMessage(createdPost)
+	response := MessageResponse{post}
 	c.JSON(http.StatusOK, response)
 }
 
-func ShowPost(c *gin.Context) {
+func ShowMessages(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	rawPost, err := db.GetPost(uint(id))
+	rawMessage, err := db.GetPost(uint(id))
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
@@ -97,13 +104,13 @@ func ShowPost(c *gin.Context) {
 		return
 	}
 
-	post := fromDBPost(rawPost)
+	post := fromDBMessage(rawMessage)
 
-	response := PostResponse{post}
+	response := MessageResponse{post}
 	c.JSON(http.StatusOK, response)
 }
 
-func RecentPosts(c *gin.Context) {
+func ShowRooms(c *gin.Context) {
 	type param struct {
 		Count int
 	}
@@ -115,20 +122,26 @@ func RecentPosts(c *gin.Context) {
 		return
 	}
 
+	roomId, err := strconv.ParseUint(c.Param("roomId"), 0, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	count := data.Count
 
-	recentPosts, err := db.GetRecentPosts(count)
+	recentPosts, err := db.GetMessages(uint(roomId), count)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	posts := PostsResponse{fromDBPosts(recentPosts)}
+	posts := MessagesResponse{fromDBMessages(recentPosts)}
 
 	c.JSON(http.StatusOK, posts)
 }
 
-func UpdatePostContent(c *gin.Context) {
+func UpdateMessageContent(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -151,7 +164,6 @@ func UpdatePostContent(c *gin.Context) {
 		return
 	}
 
-
 	old, err := db.GetPost(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
@@ -163,19 +175,19 @@ func UpdatePostContent(c *gin.Context) {
 		return
 	}
 
-	updatedPost, err := db.UpdatePost(uint(id), data.Content)
+	updatedPost, err := db.UpdateMessageContent(uint(id), data.Content)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	post := fromDBPost(updatedPost)
-	response := PostResponse{post}
+	post := fromDBMessage(updatedPost)
+	response := MessageResponse{post}
 
 	c.JSON(http.StatusOK, response)
 }
 
-func DeletePost(c *gin.Context) {
+func DeleteMessage(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -188,8 +200,7 @@ func DeletePost(c *gin.Context) {
 		return
 	}
 
-
-	target, err := db.GetPost(uint(id))
+	target, err := db.GetMessage(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
 		return
@@ -200,7 +211,7 @@ func DeletePost(c *gin.Context) {
 		return
 	}
 
-	err = db.DestroyPost(uint(id))
+	err = db.DeleteMessage(uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
