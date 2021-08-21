@@ -126,11 +126,11 @@ func GetFollowed(target uint) ([]Follow, error) {
 	return followed, result.Error
 }
 
-func CreateMessage(userId uint, chatRoomId uint, content string) (Message, error) {
+func CreateMessage(userId uint, chatroomId uint, content string) (Message, error) {
 	message := Message{}
 	message.Content = content
 	message.UserID = int(userId)
-	message.ChatRoomID = int(chatRoomId)
+	message.ChatroomId = int(chatroomId)
 	err := database.Create(&message).Error
 	return message, err
 }
