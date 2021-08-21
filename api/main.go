@@ -25,9 +25,10 @@ func main() {
 		authRequired.GET("followers", controller.ShowFollowers)
 		authRequired.GET("followees", controller.ShowFollowees)
 
-		authRequired.POST("message", controller.AddMessage)
+		authRequired.POST("message", controller.CreateRoom)
+		authRequired.POST("message/:id", controller.AddMessages)
 		authRequired.GET("message/:id", controller.ShowMessages)
-		authRequired.PATCH("message/:id", controller.UpdateMessageContent)
+		authRequired.PATCH("message", controller.UpdateMessageContent)
 		authRequired.DELETE("message/:id", controller.DeleteMessage)
 	}
 
