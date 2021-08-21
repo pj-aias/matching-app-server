@@ -135,14 +135,14 @@ func CreateMessage(userId uint, chatroomId uint, content string) (Message, error
 	return message, err
 }
 
-func GetPost(id uint) (Message, error) {
+func GetMessage(id uint) (Message, error) {
 	message := Message{}
 	message.ID = id
 	err := database.Take(&message).Error
 	return message, err
 }
 
-func UpdatePost(id uint, content string) (Message, error) {
+func UpdateMessageContent(id uint, content string) (Message, error) {
 	// can only update content
 	data := Message{}
 	data.Content = content

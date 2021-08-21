@@ -94,7 +94,7 @@ func ShowMessages(c *gin.Context) {
 		return
 	}
 
-	rawMessage, err := db.GetPost(uint(id))
+	rawMessage, err := db.GetMessage(uint(id))
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
@@ -164,7 +164,7 @@ func UpdateMessageContent(c *gin.Context) {
 		return
 	}
 
-	old, err := db.GetPost(uint(id))
+	old, err := db.GetMessage(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
 		return
