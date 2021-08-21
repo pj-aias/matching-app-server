@@ -126,42 +126,43 @@ func GetFollowed(target uint) ([]Follow, error) {
 	return followed, result.Error
 }
 
-func CreatePost(userId uint, content string) (Post, error) {
-	post := Post{}
-	post.Content = content
-	post.UserID = int(userId)
-	err := database.Create(&post).Error
-	return post, err
+func CreateMessage(userId uint, chatRoomId uint, content string) (Message, error) {
+	message := Message{}
+	message.Content = content
+	message.UserID = int(userId)
+	message.ChatRoomID = int(chatRoomId)
+	err := database.Create(&message).Error
+	return message, err
 }
 
-func GetPost(id uint) (Post, error) {
-	post := Post{}
-	post.ID = id
-	err := database.Take(&post).Error
-	return post, err
+func GetPost(id uint) (Message, error) {
+	message := Message{}
+	message.ID = id
+	err := database.Take(&message).Error
+	return message, err
 }
 
-func UpdatePost(id uint, content string) (Post, error) {
+func UpdatePost(id uint, content string) (Message, error) {
 	// can only update content
-	data := Post{}
+	data := Message{}
 	data.Content = content
 
-	outPost := Post{}
-	outPost.ID = id
+	outMessage := Message{}
+	outMessage.ID = id
 
-	err := database.Model(&outPost).Updates(&data).Error
-	return outPost, err
+	err := database.Model(&outMessage).Updates(&data).Error
+	return outMessage, err
 }
 
-func DestroyPost(id uint) error {
-	data := Post{}
+func DeleteMessage(id uint) error {
+	data := Message{}
 	data.ID = id
 	err := database.Delete(&data).Error
 	return err
 }
 
-func GetRecentPosts(count int) ([]Post, error) {
-	posts := make([]Post, count)
+func GetMessages(chatRoomId uint, count int) ([]Message, error) {
+	posts := make([]Message, count)
 	err := database.Limit(count).Order("created_at").Find(&posts).Error
 	return posts, err
 }
