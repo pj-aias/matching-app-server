@@ -194,7 +194,7 @@ func GetMessage(id uint) (Message, error) {
 
 func GetMessages(chatroomId uint) ([]Message, error) {
 	posts := []Message{}
-	err := database.Order("created_at").Find(&posts).Error
+	err := database.Model(&Message{}).Where("chatroom_id = ?", chatroomId).Order("created_at").Find(&posts).Error
 	return posts, err
 }
 
