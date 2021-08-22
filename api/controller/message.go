@@ -25,6 +25,15 @@ type MessagesResponse struct {
 	Message []Message `json:"messages"`
 }
 
+type Chatroom struct {
+	Id    uint  `json:"id"`
+	Users []int `json:"users"`
+}
+
+type ChatroomResponse struct {
+	Chatroom Chatroom `json:"chatroom"`
+}
+
 func fromDBMessage(raw db.Message) Message {
 	if raw.User == (db.User{}) {
 		raw.User, _ = db.GetUser(uint64(raw.UserID))
@@ -47,9 +56,24 @@ func fromDBMessages(rawMessages []db.Message) []Message {
 	return messages
 }
 
+func fromDBRoom(rawRoom db.Chatroom) Chatroom {
+	userIds := make([]int, len(rawRoom.Users))
+	for i, u := range rawRoom.Users {
+		userIds[i] = int(u.ID)
+	}
+
+	return Chatroom{
+		Id:    rawRoom.ID,
+		Users: userIds,
+	}
+}
+
+func CreateRoom(c *gin.Context) {
+}
+
 func AddMessage(c *gin.Context) {
 	type postData struct {
-		Content string
+		Target int
 	}
 
 	data := postData{}
@@ -59,31 +83,21 @@ func AddMessage(c *gin.Context) {
 		return
 	}
 
+	targetId := data.Target
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, "invalid user id")
 		return
 	}
 
-	roomId, err := strconv.ParseUint(c.Param("roomId"), 0, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if data.Content == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "empty content is not allowed"})
-		return
-	}
-
-	createdPost, err := db.CreateMessage(uint(userId), uint(roomId), data.Content)
+	createdRoom, err := db.CreateRoom([]uint{uint(userId), uint(targetId)})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	post := fromDBMessage(createdPost)
-	response := MessageResponse{post}
+	room := fromDBRoom(createdRoom)
+	response := ChatroomResponse{room}
 	c.JSON(http.StatusOK, response)
 }
 

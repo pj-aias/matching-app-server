@@ -27,6 +27,14 @@ func fromRawData(raw db.User) User {
 	}
 }
 
+func fromDBUsers(rawUsers []db.User) []User {
+	users := make([]User, len(rawUsers))
+	for i, u := range rawUsers {
+		users[i] = fromRawData(u)
+	}
+	return users
+}
+
 func UserShow(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
 	if err != nil {
@@ -51,7 +59,7 @@ func UserAdd(c *gin.Context) {
 		Signature string
 	}
 	type responseData struct {
-		User User `json:"user"`
+		User  User   `json:"user"`
 		Token string `json:"token"`
 	}
 
@@ -101,8 +109,8 @@ func UserAdd(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
-	response := responseData {
-		User: user,
+	response := responseData{
+		User:  user,
 		Token: token,
 	}
 
@@ -111,8 +119,8 @@ func UserAdd(c *gin.Context) {
 
 func UserUpdate(c *gin.Context) {
 	type updateData struct {
-		Avatar    string `json:",omitempty"`
-		Bio       string `json:",omitempty"`
+		Avatar string `json:",omitempty"`
+		Bio    string `json:",omitempty"`
 	}
 
 	data := updateData{}
@@ -154,7 +162,7 @@ func Login(c *gin.Context) {
 		Signature string
 	}
 	type responseData struct {
-		User User `json:"user"`
+		User  User   `json:"user"`
 		Token string `json:"token"`
 	}
 
@@ -187,8 +195,8 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	response := responseData {
-		User: fromRawData(user),
+	response := responseData{
+		User:  fromRawData(user),
 		Token: token,
 	}
 
