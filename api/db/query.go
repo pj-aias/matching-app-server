@@ -145,6 +145,14 @@ func CreateRoom(userIds []uint) (Chatroom, error) {
 
 }
 
+func GetRoom(roomId uint) (Chatroom, error) {
+	room := Chatroom{}
+	room.ID = roomId
+	err := database.Find(&room).Error
+
+	return room, err
+}
+
 func CreateMessage(userId uint, chatroomId uint, content string) (Message, error) {
 	message := Message{}
 	message.Content = content
