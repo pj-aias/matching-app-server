@@ -235,13 +235,18 @@ func UpdateMessageContent(c *gin.Context) {
 		return
 	}
 
-	updatedMessage, err := db.UpdateMessageContent(uint(data.TargetMessageId), data.Content)
+	_, err = db.UpdateMessageContent(uint(data.TargetMessageId), data.Content)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	msg := fromDBMessage(updatedMessage)
+	rawMessage, err := db.GetMessage(uint(data.TargetMessageId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	msg := fromDBMessage(rawMessage)
 	response := MessageResponse{msg}
 
 	c.JSON(http.StatusOK, response)

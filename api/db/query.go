@@ -202,12 +202,11 @@ func UpdateMessageContent(id uint, content string) (Message, error) {
 	// can only update content
 	data := Message{}
 	data.Content = content
-
 	outMessage := Message{}
 	outMessage.ID = id
 
-	err := database.Model(&outMessage).Updates(&data).Error
-	return outMessage, err
+	result := database.Model(&outMessage).Where("id = ?", id).Updates(&data)
+	return outMessage, result.Error
 }
 
 func DeleteMessage(id uint) error {
