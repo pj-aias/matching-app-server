@@ -63,7 +63,7 @@ func AddPasswordHash(userId uint64, hash []byte) (PasswordHash, error) {
 }
 
 func CreateFollow(srcUserId, dstUserId uint) (*Follow, error) {
-	follow := Follow {}
+	follow := Follow{}
 
 	var count int64
 	err := database.Model(&Follow{}).Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Count(&count).Error
@@ -79,9 +79,9 @@ func CreateFollow(srcUserId, dstUserId uint) (*Follow, error) {
 
 	// not followed yet
 	// create follow
-	follow = Follow {
+	follow = Follow{
 		SourceUserID: int(srcUserId),
-		DestUserID: int(dstUserId),
+		DestUserID:   int(dstUserId),
 	}
 	result := database.Create(&follow)
 	return &follow, result.Error
@@ -104,7 +104,7 @@ func DoesFollow(srcUserId, dstUserId uint) (bool, error) {
 	}
 }
 
-func DestroyFollow(srcUserId, dstUserId uint) (error) {
+func DestroyFollow(srcUserId, dstUserId uint) error {
 	result := database.Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Delete(&Follow{})
 	if err := result.Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		// not following
@@ -124,6 +124,25 @@ func GetFollowed(target uint) ([]Follow, error) {
 	followed := []Follow{}
 	result := database.Where("dest_user_id = ?", target).Find(&followed)
 	return followed, result.Error
+}
+
+func CreateRoom(userIds []uint) (Chatroom, error) {
+	room := Chatroom{}
+	users := make([]User, len(userIds))
+
+	for i, id := range userIds {
+		user, err := GetUser(uint64(id))
+		if err != nil {
+			return Chatroom{}, err
+		}
+		users[i] = user
+	}
+
+	room.Users = users
+
+	err := database.Create(&room).Error
+	return room, err
+
 }
 
 func CreateMessage(userId uint, chatroomId uint, content string) (Message, error) {
