@@ -153,16 +153,20 @@ func GetRoom(roomId uint) (Chatroom, error) {
 		return Chatroom{}, err
 	}
 
-	users, err := GetChatroomUsers(room.ID)
-	if err != nil {
-		return Chatroom{}, err
-	}
+	/*
+		users, err := GetChatroomUsers(room.ID)
+		if err != nil {
+			return Chatroom{}, err
+		}
+		room.Users = users
+	*/
 
-	room.Users = users
 	return room, err
 }
 
 func GetChatroomUsers(roomId uint) ([]User, error) {
+	// FIXME  Scanning chatroom_users table to slice is not working
+	// i.e.) /app/db/query.go:167 sql: Scan called without calling Next
 	userIds := []uint{}
 	err := database.Table("chatroom_users").Where("chatroom_id = ?", roomId).Find(&userIds).Error
 	if err != nil {
