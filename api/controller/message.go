@@ -207,14 +207,9 @@ func ShowRooms(c *gin.Context) {
 }
 
 func UpdateMessageContent(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
 	type param struct {
-		Content string
+		TargetMessageId int
+		Content         string
 	}
 
 	data := param{}
@@ -229,7 +224,7 @@ func UpdateMessageContent(c *gin.Context) {
 		return
 	}
 
-	old, err := db.GetMessage(uint(id))
+	old, err := db.GetMessage(uint(data.TargetMessageId))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
 		return
@@ -240,14 +235,14 @@ func UpdateMessageContent(c *gin.Context) {
 		return
 	}
 
-	updatedPost, err := db.UpdateMessageContent(uint(id), data.Content)
+	updatedMessage, err := db.UpdateMessageContent(uint(data.TargetMessageId), data.Content)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	post := fromDBMessage(updatedPost)
-	response := MessageResponse{post}
+	msg := fromDBMessage(updatedMessage)
+	response := MessageResponse{msg}
 
 	c.JSON(http.StatusOK, response)
 }
