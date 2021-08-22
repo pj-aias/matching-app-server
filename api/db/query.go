@@ -177,14 +177,22 @@ func GetChatroomUsers(roomId uint) ([]User, error) {
 }
 
 func GetRooms(userId uint) ([]Chatroom, error) {
-	roomIds := []uint{}
-	err := database.Table("chatroom_users").Where("user_id = ?", userId).Find(&roomIds).Error
+	chatroomUsers := []ChatroomUsers{}
+	err := database.Table("chatroom_users").Where("user_id = ?", userId).Find(&chatroomUsers).Error
 	if err != nil {
 		return nil, err
 	}
 
-	rooms := []Chatroom{}
-	err = database.Find(&rooms, roomIds).Error
+	rooms := make([]Chatroom, len(chatroomUsers))
+	for i, chatroomUser := range chatroomUsers {
+		room, err := GetRoom(uint(chatroomUser.ChatroomID))
+		if err != nil {
+			return nil, err
+		}
+
+		rooms[i] = room
+	}
+
 	return rooms, err
 }
 

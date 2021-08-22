@@ -40,6 +40,11 @@ type Chatroom struct {
 	Messages []Message
 }
 
+type ChatroomUsers struct {
+	UserID     int
+	ChatroomID int
+}
+
 func autoMigrate(database *gorm.DB) {
 	database.AutoMigrate(&User{})
 	database.AutoMigrate(&PasswordHash{})
