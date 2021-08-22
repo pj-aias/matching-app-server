@@ -192,6 +192,12 @@ func GetMessage(id uint) (Message, error) {
 	return message, err
 }
 
+func GetMessages(chatroomId uint) ([]Message, error) {
+	posts := []Message{}
+	err := database.Order("created_at").Find(&posts).Error
+	return posts, err
+}
+
 func UpdateMessageContent(id uint, content string) (Message, error) {
 	// can only update content
 	data := Message{}
@@ -209,10 +215,4 @@ func DeleteMessage(id uint) error {
 	data.ID = id
 	err := database.Delete(&data).Error
 	return err
-}
-
-func GetMessages(chatRoomId uint, count int) ([]Message, error) {
-	posts := make([]Message, count)
-	err := database.Limit(count).Order("created_at").Find(&posts).Error
-	return posts, err
 }

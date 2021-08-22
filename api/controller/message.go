@@ -155,25 +155,25 @@ func AddMessage(c *gin.Context) {
 }
 
 func ShowMessages(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
+	chatroomId, err := strconv.ParseUint(c.Param("roomId"), 0, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	rawMessage, err := db.GetMessage(uint(id))
+	rawMessages, err := db.GetMessages(uint(chatroomId))
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "chatroom not found"})
 		return
 	} else if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error})
 		return
 	}
 
-	post := fromDBMessage(rawMessage)
+	messages := fromDBMessages(rawMessages)
 
-	response := MessageResponse{post}
+	response := MessagesResponse{messages}
 	c.JSON(http.StatusOK, response)
 }
 
@@ -195,9 +195,7 @@ func ShowRooms(c *gin.Context) {
 		return
 	}
 
-	count := data.Count
-
-	recentPosts, err := db.GetMessages(uint(roomId), count)
+	recentPosts, err := db.GetMessages(uint(roomId))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
