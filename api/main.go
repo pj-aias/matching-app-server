@@ -26,10 +26,10 @@ func main() {
 		authRequired.GET("followees", controller.ShowFollowees)
 
 		authRequired.POST("message", controller.CreateRoom)
-		authRequired.POST("message/:id", controller.AddMessage)
-		authRequired.GET("message/:id", controller.ShowMessages)
+		authRequired.POST("message/:roomId", controller.AddMessage)
+		authRequired.GET("message/:roomId", controller.ShowMessages)
 		authRequired.PATCH("message", controller.UpdateMessageContent)
-		authRequired.DELETE("message/:id", controller.DeleteMessage)
+		authRequired.DELETE("message/:roomId", controller.DeleteMessage)
 	}
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")

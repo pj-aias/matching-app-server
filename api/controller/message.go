@@ -40,9 +40,10 @@ func fromDBMessage(raw db.Message) Message {
 	}
 
 	return Message{
-		Id:      raw.ID,
-		User:    fromRawData(raw.User),
-		Content: raw.Content,
+		Id:         raw.ID,
+		User:       fromRawData(raw.User),
+		Content:    raw.Content,
+		ChatroomId: uint(raw.ChatroomId),
 	}
 }
 
