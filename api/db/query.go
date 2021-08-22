@@ -176,6 +176,18 @@ func GetChatroomUsers(roomId uint) ([]User, error) {
 	return GetUsers(userIds)
 }
 
+func GetRooms(userId uint) ([]Chatroom, error) {
+	roomIds := []uint{}
+	err := database.Table("chatroom_users").Where("user_id = ?", userId).Find(&roomIds).Error
+	if err != nil {
+		return nil, err
+	}
+
+	rooms := []Chatroom{}
+	err = database.Find(&rooms, roomIds).Error
+	return rooms, err
+}
+
 func CreateMessage(userId uint, chatroomId uint, content string) (Message, error) {
 	message := Message{}
 	message.Content = content
