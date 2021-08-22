@@ -69,9 +69,6 @@ func fromDBRoom(rawRoom db.Chatroom) Chatroom {
 }
 
 func CreateRoom(c *gin.Context) {
-}
-
-func AddMessage(c *gin.Context) {
 	type postData struct {
 		Target int
 	}
@@ -98,6 +95,46 @@ func AddMessage(c *gin.Context) {
 
 	room := fromDBRoom(createdRoom)
 	response := ChatroomResponse{room}
+	c.JSON(http.StatusOK, response)
+}
+
+func AddMessage(c *gin.Context) {
+	type postData struct {
+		Content string
+	}
+
+	data := postData{}
+
+	if err := c.BindJSON(&data); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userId, ok := c.MustGet("userId").(int)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "invalid user id")
+		return
+	}
+
+	roomId, err := strconv.ParseUint(c.Param("roomId"), 0, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if data.Content == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "empty content is not allowed"})
+		return
+	}
+
+	createdPost, err := db.CreateMessage(uint(userId), uint(roomId), data.Content)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	post := fromDBMessage(createdPost)
+	response := MessageResponse{post}
 	c.JSON(http.StatusOK, response)
 }
 
