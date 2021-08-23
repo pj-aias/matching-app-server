@@ -13,7 +13,13 @@ type MatchResponse struct {
 }
 
 func MakeMatch(c *gin.Context) {
-	targetUsers, err := getMatchUsers()
+	userId, ok := c.MustGet("userId").(int)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "invalid user id")
+		return
+	}
+
+	targetUsers, err := getMatchUsers(uint(userId))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -30,13 +36,23 @@ func MakeMatch(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func getMatchUsers() ([]User, error) {
+func getMatchUsers(fromUserId uint) ([]User, error) {
 	rawUsers, err := db.GetAllUsers()
 	if err != nil {
 		return nil, err
 	}
 
 	users := fromDBUsers(rawUsers)
+
+	lastIdx := len(users) - 1
+	// find source user
+	for i, u := range users {
+		if u.ID == fromUserId {
+			users[i] = users[lastIdx]
+			users = users[:lastIdx]
+		}
+	}
+
 	return users, nil
 }
 
