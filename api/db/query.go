@@ -45,6 +45,13 @@ func GetUsers(usersId []uint) ([]User, error) {
 	return users, result.Error
 }
 
+func GetAllUsers() ([]User, error) {
+	users := make([]User, 0)
+
+	result := database.Find(&users)
+	return users, result.Error
+}
+
 func GetPasswordHash(userId uint64) (PasswordHash, error) {
 	hash := PasswordHash{UserID: int(userId)}
 	result := database.Take(&hash)
@@ -63,7 +70,7 @@ func AddPasswordHash(userId uint64, hash []byte) (PasswordHash, error) {
 }
 
 func CreateFollow(srcUserId, dstUserId uint) (*Follow, error) {
-	follow := Follow {}
+	follow := Follow{}
 
 	var count int64
 	err := database.Model(&Follow{}).Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Count(&count).Error
@@ -79,9 +86,9 @@ func CreateFollow(srcUserId, dstUserId uint) (*Follow, error) {
 
 	// not followed yet
 	// create follow
-	follow = Follow {
+	follow = Follow{
 		SourceUserID: int(srcUserId),
-		DestUserID: int(dstUserId),
+		DestUserID:   int(dstUserId),
 	}
 	result := database.Create(&follow)
 	return &follow, result.Error
@@ -104,7 +111,7 @@ func DoesFollow(srcUserId, dstUserId uint) (bool, error) {
 	}
 }
 
-func DestroyFollow(srcUserId, dstUserId uint) (error) {
+func DestroyFollow(srcUserId, dstUserId uint) error {
 	result := database.Where("source_user_id = ? and dest_user_id = ?", srcUserId, dstUserId).Delete(&Follow{})
 	if err := result.Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		// not following
