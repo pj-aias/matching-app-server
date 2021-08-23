@@ -30,6 +30,8 @@ func main() {
 		authRequired.PATCH("post/:id", controller.UpdatePostContent)
 		authRequired.DELETE("post/:id", controller.DeletePost)
 		authRequired.GET("post/recent", controller.RecentPosts)
+
+		authRequired.POST("matching", controller.MakeMatch)
 	}
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
