@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -153,25 +154,25 @@ func GetRoom(roomId uint) (Chatroom, error) {
 		return Chatroom{}, err
 	}
 
-	/*
-		users, err := GetChatroomUsers(room.ID)
-		if err != nil {
-			return Chatroom{}, err
-		}
-		room.Users = users
-	*/
+	users, err := GetChatroomUsers(room.ID)
+	if err != nil {
+		return Chatroom{}, err
+	}
+	room.Users = users
 
 	return room, err
 }
 
 func GetChatroomUsers(roomId uint) ([]User, error) {
-	// FIXME  Scanning chatroom_users table to slice is not working
-	// i.e.) /app/db/query.go:167 sql: Scan called without calling Next
-	userIds := []uint{}
-	err := database.Table("chatroom_users").Where("chatroom_id = ?", roomId).Find(&userIds).Error
+	chatroomUsers := []ChatroomUsers{}
+	err := database.Table("chatroom_users").Where("chatroom_id = ?", roomId).Find(&chatroomUsers).Error
+
+	userIds := make([]uint, len(chatroomUsers))
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println(userIds)
 
 	return GetUsers(userIds)
 }

@@ -26,6 +26,7 @@ func main() {
 		authRequired.GET("followees", controller.ShowFollowees)
 
 		authRequired.POST("message", controller.CreateRoom)
+		authRequired.GET("message/rooms", controller.ShowRooms)
 		authRequired.POST("message/:roomId", controller.AddMessage)
 		authRequired.GET("message/:roomId", controller.ShowMessages)
 	}

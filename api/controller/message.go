@@ -34,6 +34,10 @@ type ChatroomResponse struct {
 	Chatroom Chatroom `json:"chatroom"`
 }
 
+type ChatroomsResponse struct {
+	Chatrooms []Chatroom `json:"chatrooms"`
+}
+
 func fromDBMessage(raw db.Message) Message {
 	if raw.User == (db.User{}) {
 		raw.User, _ = db.GetUser(uint64(raw.UserID))
@@ -67,6 +71,15 @@ func fromDBRoom(rawRoom db.Chatroom) Chatroom {
 		Id:    rawRoom.ID,
 		Users: userIds,
 	}
+}
+
+func fromDBRooms(rawRooms []db.Chatroom) []Chatroom {
+	rooms := make([]Chatroom, len(rawRooms))
+	for i, r := range rawRooms {
+		rooms[i] = fromDBRoom(r)
+	}
+
+	return rooms
 }
 
 func CreateRoom(c *gin.Context) {
@@ -178,32 +191,21 @@ func ShowMessages(c *gin.Context) {
 }
 
 func ShowRooms(c *gin.Context) {
-	type param struct {
-		Count int
-	}
-
-	data := param{}
-
-	if err := c.BindJSON(&data); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	userId, ok := c.MustGet("userId").(int)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
 		return
 	}
 
-	roomId, err := strconv.ParseUint(c.Param("roomId"), 0, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	recentPosts, err := db.GetMessages(uint(roomId))
+	rawRooms, err := db.GetRooms(uint(userId))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	posts := MessagesResponse{fromDBMessages(recentPosts)}
-
-	c.JSON(http.StatusOK, posts)
+	rooms := fromDBRooms(rawRooms)
+	response := ChatroomsResponse{rooms}
+	c.JSON(http.StatusOK, response)
 }
 
 func UpdateMessageContent(c *gin.Context) {
