@@ -1,4 +1,8 @@
-# Posts API Documentation
+# Posts API Documentation (Deprecated)
+Deprecated.
+
+Posts API were altered to Messages, and no longer used.
+
 ## `POST /post`
 Authorization required.
 
