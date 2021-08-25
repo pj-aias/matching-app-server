@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+    api:
+        build: ./api
+        ports:
+            - "8080:8080"
+        volumes:
+            - ./api:/app
+            - go:/go
+            - ./secrets/keys:/run/keys
+        environment:
+            - SECRET_KEY=/run/keys/private.pem
+            - PUBLIC_KEY=/run/keys/public.pem
+        secrets:
+            - mysql_password
+        depends_on:
+            - db
+
+    db:
+        build: ./db
+        volumes:
+            - mysqldata:/var/lib/mysql
+        secrets:
+            - mysql_password
+
+volumes:
+    mysqldata:
+
+    go:
+
+secrets:
+    mysql_password:
+        file: ./secrets/mysql_password.txt
