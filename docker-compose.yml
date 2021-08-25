@@ -24,6 +24,11 @@ services:
         secrets:
             - mysql_password
 
+    tor:
+        build: ./tor
+        volumes:
+            - ./secrets/tor:/var/lib/tor
+
 volumes:
     mysqldata:
 
