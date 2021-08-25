@@ -45,6 +45,13 @@ func GetUsers(usersId []uint) ([]User, error) {
 	return users, result.Error
 }
 
+func GetAllUsers() ([]User, error) {
+	users := make([]User, 0)
+
+	result := database.Find(&users)
+	return users, result.Error
+}
+
 func GetPasswordHash(userId uint64) (PasswordHash, error) {
 	hash := PasswordHash{UserID: int(userId)}
 	result := database.Take(&hash)
