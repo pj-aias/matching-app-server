@@ -9,7 +9,8 @@ import (
 )
 
 type MatchResponse struct {
-	User User `json:"user"`
+	MatchedUser User     `json:"matched_user"`
+	Chatroom    Chatroom `json:"chatroom"`
 }
 
 func MakeMatch(c *gin.Context) {
@@ -31,7 +32,15 @@ func MakeMatch(c *gin.Context) {
 	}
 
 	matchedUser := selectUser(targetUsers)
-	response := MatchResponse{matchedUser}
+
+	rawChatroom, err := db.CreateRoom([]uint{uint(userId), matchedUser.ID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	chatroom := fromDBRoom(rawChatroom)
+
+	response := MatchResponse{matchedUser, chatroom}
 
 	c.JSON(http.StatusOK, response)
 }
