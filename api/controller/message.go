@@ -136,20 +136,16 @@ func AddMessage(c *gin.Context) {
 		return
 	}
 
-	_, err = db.GetRoom(uint(roomId))
+	room, err := db.GetRoom(uint(roomId))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	/*
-		TODO: Block request from users who is not in chatroom members.
-		      Currently `ContainsUser` not working
-
-		if !room.ContainsUser(uint(userId)) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "you cannot post a message to room you are not in"})
-			return
-		}*/
+	if !room.ContainsUser(uint(userId)) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "you cannot post a message to room you are not in"})
+		return
+	}
 
 	if data.Content == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "empty content is not allowed"})

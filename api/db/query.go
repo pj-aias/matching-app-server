@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -175,8 +174,6 @@ func GetChatroomUsers(roomId uint) ([]User, error) {
 	for i, chatroomUser := range chatroomUsers {
 		userIds[i] = uint(chatroomUser.UserID)
 	}
-
-	fmt.Println("userIds:", userIds)
 
 	return GetUsers(userIds)
 }
