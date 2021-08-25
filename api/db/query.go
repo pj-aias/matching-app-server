@@ -133,42 +133,114 @@ func GetFollowed(target uint) ([]Follow, error) {
 	return followed, result.Error
 }
 
-func CreatePost(userId uint, content string) (Post, error) {
-	post := Post{}
-	post.Content = content
-	post.UserID = int(userId)
-	err := database.Create(&post).Error
-	return post, err
+func CreateRoom(userIds []uint) (Chatroom, error) {
+	room := Chatroom{}
+	users := make([]User, len(userIds))
+
+	for i, id := range userIds {
+		user, err := GetUser(uint64(id))
+		if err != nil {
+			return Chatroom{}, err
+		}
+		users[i] = user
+	}
+
+	room.Users = users
+
+	err := database.Create(&room).Error
+	return room, err
+
 }
 
-func GetPost(id uint) (Post, error) {
-	post := Post{}
-	post.ID = id
-	err := database.Take(&post).Error
-	return post, err
+func GetRoom(roomId uint) (Chatroom, error) {
+	room := Chatroom{}
+	room.ID = roomId
+	err := database.Model(&Chatroom{}).Find(&room).Error
+	if err != nil {
+		return Chatroom{}, err
+	}
+
+	users, err := GetChatroomUsers(room.ID)
+	if err != nil {
+		return Chatroom{}, err
+	}
+	room.Users = users
+
+	return room, err
 }
 
-func UpdatePost(id uint, content string) (Post, error) {
+func GetChatroomUsers(roomId uint) ([]User, error) {
+	chatroomUsers := []ChatroomUsers{}
+	err := database.Table("chatroom_users").Where("chatroom_id = ?", roomId).Find(&chatroomUsers).Error
+
+	userIds := make([]uint, len(chatroomUsers))
+	if err != nil {
+		return nil, err
+	}
+
+	for i, chatroomUser := range chatroomUsers {
+		userIds[i] = uint(chatroomUser.UserID)
+	}
+
+	return GetUsers(userIds)
+}
+
+func GetRooms(userId uint) ([]Chatroom, error) {
+	chatroomUsers := []ChatroomUsers{}
+	err := database.Table("chatroom_users").Where("user_id = ?", userId).Find(&chatroomUsers).Error
+	if err != nil {
+		return nil, err
+	}
+
+	rooms := make([]Chatroom, len(chatroomUsers))
+	for i, chatroomUser := range chatroomUsers {
+		room, err := GetRoom(uint(chatroomUser.ChatroomID))
+		if err != nil {
+			return nil, err
+		}
+
+		rooms[i] = room
+	}
+
+	return rooms, err
+}
+
+func CreateMessage(userId uint, chatroomId uint, content string) (Message, error) {
+	message := Message{}
+	message.Content = content
+	message.UserID = int(userId)
+	message.ChatroomId = int(chatroomId)
+	err := database.Create(&message).Error
+	return message, err
+}
+
+func GetMessage(id uint) (Message, error) {
+	message := Message{}
+	message.ID = id
+	err := database.Take(&message).Error
+	return message, err
+}
+
+func GetMessages(chatroomId uint) ([]Message, error) {
+	posts := []Message{}
+	err := database.Model(&Message{}).Where("chatroom_id = ?", chatroomId).Order("created_at").Find(&posts).Error
+	return posts, err
+}
+
+func UpdateMessageContent(id uint, content string) (Message, error) {
 	// can only update content
-	data := Post{}
+	data := Message{}
 	data.Content = content
+	outMessage := Message{}
+	outMessage.ID = id
 
-	outPost := Post{}
-	outPost.ID = id
-
-	err := database.Model(&outPost).Updates(&data).Error
-	return outPost, err
+	result := database.Model(&outMessage).Where("id = ?", id).Updates(&data)
+	return outMessage, result.Error
 }
 
-func DestroyPost(id uint) error {
-	data := Post{}
+func DeleteMessage(id uint) error {
+	data := Message{}
 	data.ID = id
 	err := database.Delete(&data).Error
 	return err
-}
-
-func GetRecentPosts(count int) ([]Post, error) {
-	posts := make([]Post, count)
-	err := database.Limit(count).Order("created_at").Find(&posts).Error
-	return posts, err
 }

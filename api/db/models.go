@@ -25,16 +25,30 @@ type Follow struct {
 	DestUser     User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
-type Post struct {
+type Message struct {
 	gorm.Model
-	UserID int
-	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	Content string
+	ChatroomId int
+	Chatroom   Chatroom `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	UserID     int
+	User       User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Content    string
+}
+
+type Chatroom struct {
+	gorm.Model
+	Users    []User `gorm:"many2many:chatroom_users;"`
+	Messages []Message
+}
+
+type ChatroomUsers struct {
+	UserID     int
+	ChatroomID int
 }
 
 func autoMigrate(database *gorm.DB) {
 	database.AutoMigrate(&User{})
 	database.AutoMigrate(&PasswordHash{})
 	database.AutoMigrate(&Follow{})
-	database.AutoMigrate(&Post{})
+	database.AutoMigrate(&Message{})
+	database.AutoMigrate(&Chatroom{})
 }
