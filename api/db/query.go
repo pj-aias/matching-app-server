@@ -172,7 +172,11 @@ func GetChatroomUsers(roomId uint) ([]User, error) {
 		return nil, err
 	}
 
-	fmt.Println(userIds)
+	for i, chatroomUser := range chatroomUsers {
+		userIds[i] = uint(chatroomUser.UserID)
+	}
+
+	fmt.Println("userIds:", userIds)
 
 	return GetUsers(userIds)
 }
