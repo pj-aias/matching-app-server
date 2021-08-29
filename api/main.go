@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/pj-aias/matching-app-server/controller"
@@ -11,6 +13,9 @@ func main() {
 	r := gin.Default()
 	r.POST("user", controller.UserAdd)
 	r.POST("login", controller.Login)
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{})
+	})
 
 	authRequired := r.Group("/")
 	authRequired.Use(middleware.AuthorizeToken())
@@ -25,13 +30,12 @@ func main() {
 		authRequired.GET("followers", controller.ShowFollowers)
 		authRequired.GET("followees", controller.ShowFollowees)
 
-
 		authRequired.POST("message", controller.CreateRoom)
 		authRequired.GET("message/rooms", controller.ShowRooms)
 		authRequired.POST("message/:roomId", controller.AddMessage)
 		authRequired.GET("message/:roomId", controller.ShowMessages)
 
-    authRequired.POST("matching", controller.MakeMatch)
+		authRequired.POST("matching", controller.MakeMatch)
 
 	}
 
