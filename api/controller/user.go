@@ -98,7 +98,7 @@ func UserAdd(c *gin.Context) {
 	}
 	user := fromRawData(createdUser)
 
-	_, err = db.AddPasswordHash(uint64(user.ID), passwordHash)
+	hash, err = db.AddPasswordHash(uint64(user.ID), passwordHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
