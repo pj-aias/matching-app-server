@@ -154,8 +154,7 @@ func CreateRoom(userIds []uint) (Chatroom, error) {
 
 func GetRoom(roomId uint) (Chatroom, error) {
 	room := Chatroom{}
-	room.ID = roomId
-	err := database.Model(&Chatroom{}).Find(&room).Error
+	err := database.First(&room, roomId).Error
 	if err != nil {
 		return Chatroom{}, err
 	}
