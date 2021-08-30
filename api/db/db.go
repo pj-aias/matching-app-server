@@ -19,7 +19,7 @@ func TestInsert(user User) {
 	database.Create(&user)
 }
 
-func init() {
+func ConnectDB(dbName string) (*gorm.DB, error) {
 	tz, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		panic("Failed to Parse TimeZone")
@@ -30,14 +30,26 @@ func init() {
 		Passwd:    getPassword(),
 		Net:       "tcp",
 		Addr:      "db" + ":3306",
-		DBName:    "service",
+		DBName:    dbName,
 		ParseTime: true,
 		Loc:       tz,
 	}
 	dsn := config.FormatDSN()
 
 	conn := gormMySQL.Open(dsn)
-	database, err = gorm.Open(conn, &gorm.Config{})
+	return gorm.Open(conn, &gorm.Config{})
+}
+
+func init() {
+	dbName := "service"
+
+	env := os.Getenv("SERVICE_ENV")
+
+	if env == "test" {
+		dbName = "test"
+	}
+
+	database, err := ConnectDB(dbName)
 
 	if err != nil {
 		panic("Failed to open MySQL Connection")
