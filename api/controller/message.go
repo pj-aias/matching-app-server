@@ -181,8 +181,11 @@ func ShowMessages(c *gin.Context) {
 	messages := fromDBMessages(rawMessages)
 
 	rawRoom, err := db.GetRoom(uint(chatroomId))
-	if err != nil {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error})
 		return
 	}
 	room := fromDBRoom(rawRoom)
