@@ -26,8 +26,8 @@ type MessagesResponse struct {
 }
 
 type Chatroom struct {
-	Id    uint  `json:"id"`
-	Users []int `json:"users"`
+	Id    uint   `json:"id"`
+	Users []User `json:"users"`
 }
 
 type ChatroomResponse struct {
@@ -62,14 +62,11 @@ func fromDBMessages(rawMessages []db.Message) []Message {
 }
 
 func fromDBRoom(rawRoom db.Chatroom) Chatroom {
-	userIds := make([]int, len(rawRoom.Users))
-	for i, u := range rawRoom.Users {
-		userIds[i] = int(u.ID)
-	}
+	users := fromDBUsers(rawRoom.Users)
 
 	return Chatroom{
 		Id:    rawRoom.ID,
-		Users: userIds,
+		Users: users,
 	}
 }
 
