@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -53,4 +54,10 @@ func TestPasswordHashCreate(t *testing.T) {
 		t.Errorf("invalid password wanted: %v", err)
 		return
 	}
+}
+
+func TestMain(m *testing.M) {
+	db.ConnectDB("test")
+	code := m.Run()
+	os.Exit(code)
 }
