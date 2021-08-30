@@ -49,7 +49,8 @@ func init() {
 		dbName = "test"
 	}
 
-	database, err := ConnectDB(dbName)
+	var err error
+	database, err = ConnectDB(dbName)
 
 	if err != nil {
 		panic("Failed to open MySQL Connection")
