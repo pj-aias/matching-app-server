@@ -53,8 +53,8 @@ func GetAllUsers() ([]User, error) {
 }
 
 func GetPasswordHash(userId uint64) (PasswordHash, error) {
-	hash := PasswordHash{UserID: int(userId)}
-	result := database.Take(&hash)
+	hash := PasswordHash{}
+	result := database.Model(&PasswordHash{}).Where("user_id = ?", userId).Take(&hash)
 
 	return hash, result.Error
 }
