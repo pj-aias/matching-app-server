@@ -22,7 +22,8 @@ type MessageResponse struct {
 }
 
 type MessagesResponse struct {
-	Message []Message `json:"messages"`
+	Chatroom Chatroom  `json:"chatroom"`
+	Message  []Message `json:"messages"`
 }
 
 type Chatroom struct {
@@ -179,7 +180,14 @@ func ShowMessages(c *gin.Context) {
 
 	messages := fromDBMessages(rawMessages)
 
-	response := MessagesResponse{messages}
+	rawRoom, err := db.GetRoom(uint(chatroomId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+		return
+	}
+	room := fromDBRoom(rawRoom)
+
+	response := MessagesResponse{room, messages}
 	c.JSON(http.StatusOK, response)
 }
 
