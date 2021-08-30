@@ -25,12 +25,20 @@ func init() {
 		panic("Failed to Parse TimeZone")
 	}
 
+	dbName := "test"
+
+	env := os.Getenv("GIN_ENV")
+
+	if env == "release" {
+		dbName = "service"
+	}
+
 	config := mysql.Config{
 		User:      "root",
 		Passwd:    getPassword(),
 		Net:       "tcp",
 		Addr:      "db" + ":3306",
-		DBName:    "service",
+		DBName:    dbName,
 		ParseTime: true,
 		Loc:       tz,
 	}
