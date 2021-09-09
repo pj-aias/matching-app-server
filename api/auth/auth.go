@@ -46,7 +46,6 @@ func ValidatePassword(hash []byte, password string) error {
 }
 
 func CreateToken(userId int) (string, error) {
-	//TODO check
 	claims := CustomClaims{
 		userId,
 		jwt.StandardClaims{
@@ -73,16 +72,26 @@ func ValidateToken(tokenString string) (userId int, err error) {
 		return PubKey, nil
 	})
 
-	if err != nil {
+	if ve, ok := err.(*jwt.ValidationError); !token.Valid && ok {
+		reason := "unknown reason"
+		if ve.Errors&jwt.ValidationErrorExpired != 0 {
+			reason = "token has expired"
+		} else if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+			reason = "not a token string: " + tokenString
+		}
+		log.Printf("authentication failed (%v) for token %v", reason, tokenString)
+		return 0, &AuthenticationError{reason}
+	} else if !ok {
+		// not a validation error
 		return 0, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		// All claim values seems to be float. So we must convert to int after assertion to float
 		userId = int(claims["UserId"].(float64))
 		log.Printf("authentication complete for user %v", userId)
 	} else {
-		return 0, errors.New("get user_id failed")
+		return 0, errors.New("failed to get user id from token")
 	}
 
 	return userId, nil
