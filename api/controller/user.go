@@ -134,7 +134,7 @@ func UserUpdate(c *gin.Context) {
 	data := updateData{}
 
 	if err := c.BindJSON(&data); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get post data: " + err.Error()})
 		return
 	}
 
@@ -177,7 +177,7 @@ func Login(c *gin.Context) {
 	data := postData{}
 
 	if err := c.BindJSON(&data); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get post data: " + err.Error()})
 		return
 	}
 

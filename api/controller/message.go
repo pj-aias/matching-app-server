@@ -88,7 +88,7 @@ func CreateRoom(c *gin.Context) {
 	data := postData{}
 
 	if err := c.BindJSON(&data); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get post data: " + err.Error()})
 		return
 	}
 
@@ -118,7 +118,7 @@ func AddMessage(c *gin.Context) {
 	data := postData{}
 
 	if err := c.BindJSON(&data); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get post data: " + err.Error()})
 		return
 	}
 
@@ -220,7 +220,7 @@ func UpdateMessageContent(c *gin.Context) {
 
 	data := param{}
 	if err := c.BindJSON(&data); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get post data: " + err.Error()})
 		return
 	}
 
