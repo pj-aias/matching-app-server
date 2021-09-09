@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -95,7 +96,8 @@ func CreateRoom(c *gin.Context) {
 	targetId := data.Target
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "invalid user id")
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -124,7 +126,8 @@ func AddMessage(c *gin.Context) {
 
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "invalid user id")
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -197,7 +200,8 @@ func ShowMessages(c *gin.Context) {
 func ShowRooms(c *gin.Context) {
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -226,7 +230,8 @@ func UpdateMessageContent(c *gin.Context) {
 
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "invalid user id")
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -267,7 +272,8 @@ func DeleteMessage(c *gin.Context) {
 
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "invalid user id")
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 

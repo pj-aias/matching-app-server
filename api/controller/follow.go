@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -23,7 +24,8 @@ func ShowFollow(c *gin.Context) {
 
 	srcUserId, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "invalid user id")
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -45,7 +47,8 @@ func FollowUser(c *gin.Context) {
 
 	srcUserId, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "invalid user id")
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -73,7 +76,8 @@ func UnfollowUser(c *gin.Context) {
 
 	srcUserId, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "invalid user id")
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -99,7 +103,8 @@ type Followees struct {
 func ShowFollowees(c *gin.Context) {
 	source, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "invalid user id")
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -129,7 +134,8 @@ type Followers struct {
 func ShowFollowers(c *gin.Context) {
 	source, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "invalid user id")
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -164,9 +170,9 @@ func getFollowFromDB(source, target uint) (Follow, error) {
 	}
 
 	return Follow{
-		Target: target,
+		Target:    target,
 		Following: following,
-		Followed: followed,
+		Followed:  followed,
 	}, nil
 }
 
