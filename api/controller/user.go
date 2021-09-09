@@ -61,9 +61,9 @@ func UserShow(c *gin.Context) {
 
 func UserAdd(c *gin.Context) {
 	type postData struct {
-		Username  string
-		Password  string
-		Signature string
+		Username  string `binding:"required"`
+		Password  string `binding:"required"`
+		Signature string `binding:"required"`
 	}
 	type responseData struct {
 		User  User   `json:"user"`
