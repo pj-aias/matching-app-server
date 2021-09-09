@@ -91,7 +91,7 @@ func UserAdd(c *gin.Context) {
 	// validate password and generate hash before inserting user data into DB
 	passwordHash, err := auth.GeneratePasswordHash(data.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to generate password hash: " + err.Error()})
 		return
 	}
 
@@ -107,7 +107,7 @@ func UserAdd(c *gin.Context) {
 
 	_, err = db.AddPasswordHash(uint64(user.ID), passwordHash)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to saving password to database: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to saving hashed password to database: " + err.Error()})
 		return
 	}
 
