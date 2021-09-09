@@ -74,7 +74,7 @@ func UserAdd(c *gin.Context) {
 
 	// todo empty signature passes
 	if err := c.BindJSON(&data); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get post data: " + err.Error()})
 		return
 	}
 
@@ -84,7 +84,7 @@ func UserAdd(c *gin.Context) {
 		return
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		// normal error
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "an error occured while contacting to database: " + err.Error()})
 		return
 	}
 
@@ -100,20 +100,21 @@ func UserAdd(c *gin.Context) {
 	}
 	createdUser, err := db.AddUser(userParam)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user: " + err.Error()})
 		return
 	}
 	user := fromRawData(createdUser)
 
 	_, err = db.AddPasswordHash(uint64(user.ID), passwordHash)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to saving password to database: " + err.Error()})
 		return
 	}
 
 	token, err := auth.CreateToken(int(user.ID))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to issue a auth credential: " + err.Error()})
+		return
 	}
 
 	response := responseData{
