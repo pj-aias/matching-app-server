@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -38,13 +39,19 @@ func fromDBUsers(rawUsers []db.User) []User {
 func UserShow(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("invalid user id (%v): %v", c.Param("id"), err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
 	result, err := db.GetUser(id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		e := fmt.Sprintf("user with that id was not found: %v", id)
+		c.JSON(http.StatusNotFound, gin.H{"error": e})
+		return
+	}
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "an error occured while getting user from database: " + err.Error()})
 		return
 	}
 
