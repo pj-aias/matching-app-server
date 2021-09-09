@@ -42,7 +42,10 @@ func GeneratePasswordHash(password string) ([]byte, error) {
 }
 
 func ValidatePassword(hash []byte, password string) error {
-	return bcrypt.CompareHashAndPassword(hash, []byte(password))
+	err := bcrypt.CompareHashAndPassword(hash, []byte(password))
+	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+		return &AuthenticationError{"password did not match"}
+	}
 }
 
 func CreateToken(userId int) (string, error) {
