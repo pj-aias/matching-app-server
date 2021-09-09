@@ -44,8 +44,9 @@ func GeneratePasswordHash(password string) ([]byte, error) {
 func ValidatePassword(hash []byte, password string) error {
 	err := bcrypt.CompareHashAndPassword(hash, []byte(password))
 	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-		return &AuthenticationError{"password did not match"}
+		return &ErrPasswordDidNotMatch
 	}
+	return err
 }
 
 func CreateToken(userId int) (string, error) {
@@ -76,14 +77,14 @@ func ValidateToken(tokenString string) (userId int, err error) {
 	})
 
 	if ve, ok := err.(*jwt.ValidationError); !token.Valid && ok {
-		reason := "unknown reason"
+		authError := AuthenticationError{"unknown reason"}
 		if ve.Errors&jwt.ValidationErrorExpired != 0 {
-			reason = "token has expired"
+			authError = ErrTokenExpired
 		} else if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-			reason = "not a token string: " + tokenString
+			authError = AuthenticationError{"not a token string: " + tokenString}
 		}
-		log.Printf("authentication failed (%v) for token %v", reason, tokenString)
-		return 0, &AuthenticationError{reason}
+		log.Printf("authentication failed (%v) for token %v", authError.reason, tokenString)
+		return 0, &authError
 	} else if !ok {
 		// not a validation error
 		return 0, err

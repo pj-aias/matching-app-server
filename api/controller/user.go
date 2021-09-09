@@ -192,7 +192,11 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if err := auth.ValidatePassword(hash.Hash, data.Password); err != nil {
+
+	err = auth.ValidatePassword(hash.Hash, data.Password)
+	if errors.Is(err, &auth.ErrPasswordDidNotMatch) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "password did not match"})
+	} else if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
