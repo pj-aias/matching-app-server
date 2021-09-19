@@ -1,4 +1,4 @@
-FROM mysql:latest
+FROM --platform=linux/amd64 mysql:latest
 
 ENV MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql_password
 
