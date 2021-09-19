@@ -1,5 +1,5 @@
 # Build verifier
-FROM --platform=linux/amd64 rust:latest AS build_verifier
+FROM rust:latest AS build_verifier
 
 RUN cd /root && git clone https://github.com/pj-aias/aias-verifier.git
 
@@ -7,11 +7,11 @@ WORKDIR /root/aias-verifier
 
 #RUN rustup target add x86_64-unknown-linux-gnu
 RUN cargo fetch
-RUN cargo build
+RUN cargo build --release
 
 
 # Main API Server
-FROM --platform=linux/amd64 golang:latest
+FROM golang:latest
 
 WORKDIR /app
 
