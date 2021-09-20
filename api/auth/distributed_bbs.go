@@ -16,21 +16,19 @@ type VerifyParams struct {
 	Gpk       string `msgpack:"gpk"`
 }
 
-func VerifySignature(data interface{}, signature, gpk string) (bool, error) {
-	encoded, err := json.Marshal(data)
+type Message = interface{}
+type Signature = string
+type Gpk = string
+
+func VerifySignature(message Message, signature Signature, gpk Gpk) (bool, error) {
+	params, err := fromData(message, signature, gpk)
 	if err != nil {
-		return false, fmt.Errorf("failed to encode data: %v", err)
+		return false, fmt.Errorf("failed to format message")
 	}
 
-	params := VerifyParams{
-		Message:   encoded,
-		Signature: signature,
-		Gpk:       gpk,
-	}
-
-	dataMsg, err := msgpack.Marshal(&params)
+	encoded, err := params.encode()
 	if err != nil {
-		return false, fmt.Errorf("failed to marshal data into MessagePack: %v", err)
+		return false, fmt.Errorf("failed to encode data")
 	}
 
 	cmd := exec.Command(verifierPath, "verify")
@@ -40,7 +38,7 @@ func VerifySignature(data interface{}, signature, gpk string) (bool, error) {
 	}
 	defer cmdStdin.Close()
 
-	_, err = cmdStdin.Write(dataMsg)
+	_, err = cmdStdin.Write(encoded)
 	if err != nil {
 		return false, fmt.Errorf("failed to write verifier stdin: %v", err)
 	}
@@ -59,4 +57,22 @@ func VerifySignature(data interface{}, signature, gpk string) (bool, error) {
 	} else {
 		return false, fmt.Errorf("unreachable")
 	}
+}
+
+func fromData(message Message, signature Signature, gpk Gpk) (VerifyParams, error) {
+	encoded, err := json.Marshal(message)
+	if err != nil {
+		return VerifyParams{}, err
+	}
+
+	return VerifyParams{
+		Message:   encoded,
+		Signature: signature,
+		Gpk:       gpk,
+	}, nil
+
+}
+
+func (p VerifyParams) encode() ([]byte, error) {
+	return msgpack.Marshal(&p)
 }
