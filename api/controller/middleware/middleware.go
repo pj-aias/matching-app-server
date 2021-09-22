@@ -38,7 +38,7 @@ func AuthorizeToken() gin.HandlerFunc {
 		// validate signature
 		// FIXME: extract to another midldeware
 		signature := c.GetHeader("AnoMatch-Signature")
-		gpk, err := db.GetUserGpk(userId)
+		gpk, err := db.GetUserGpk(uint(userId))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "could not find GPK"})
 			return

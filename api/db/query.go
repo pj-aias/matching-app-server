@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 
+	"github.com/pj-aias/matching-app-server/auth"
 	"gorm.io/gorm"
 )
 
@@ -50,6 +51,13 @@ func GetAllUsers() ([]User, error) {
 
 	result := database.Find(&users)
 	return users, result.Error
+}
+
+func GetUserGpk(userId uint) (auth.Gpk, error) {
+	gpk := Gpk{}
+	err := database.Model(&Gpk{}).Where("user_id = ?", userId).Take(&gpk).Error
+
+	return gpk.Gpk, err
 }
 
 func GetPasswordHash(userId uint64) (PasswordHash, error) {

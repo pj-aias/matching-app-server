@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/pj-aias/matching-app-server/auth"
 	"gorm.io/gorm"
 )
 
@@ -9,6 +10,12 @@ type User struct {
 	Username string `gorm:"size:32,unique"`
 	Avatar   string `gorm:"size:255"`
 	Bio      string `gorm:"size:255"`
+}
+
+type Gpk struct {
+	Gpk    auth.Gpk
+	UserID int
+	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 type PasswordHash struct {
@@ -47,6 +54,7 @@ type ChatroomUsers struct {
 
 func autoMigrate(database *gorm.DB) {
 	database.AutoMigrate(&User{})
+	database.AutoMigrate(&Gpk{})
 	database.AutoMigrate(&PasswordHash{})
 	database.AutoMigrate(&Follow{})
 	database.AutoMigrate(&Message{})
