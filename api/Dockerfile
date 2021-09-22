@@ -15,6 +15,6 @@ FROM golang:latest
 
 WORKDIR /app
 
-COPY --from=build_verifier /root/aias-verifier/target/release/aias-verifier ./
+COPY --from=build_verifier /root/aias-verifier/target/release/aias-verifier /usr/local/bin/aias-verifier
 
 CMD go run .

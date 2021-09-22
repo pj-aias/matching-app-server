@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"strings"
 )
 
-const verifierPath = "../aias-verifier"
+const verifierPath = "/usr/local/bin/aias-verifier"
 
 type VerifyParams struct {
 	Message   []byte `msgpack:"message"`
@@ -49,26 +50,26 @@ func (p VerifyParams) verify() (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed to get verifier stdin: %v", err)
 	}
-	defer cmdStdin.Close()
 
 	_, err = cmdStdin.Write(encoded)
 	if err != nil {
 		return false, fmt.Errorf("failed to write verifier stdin: %v", err)
 	}
+	cmdStdin.Close()
 
 	outBytes, err := cmd.Output()
 	out := string(outBytes)
-	if out == "OK" {
+	if strings.HasPrefix(out, "OK") {
 		// passed verification
 		return true, nil
-	} else if out == "NG" {
+	} else if strings.HasPrefix(out, "NG") {
 		// failed verification
 		return false, nil
 	} else if err != nil {
 		// some error
 		return false, fmt.Errorf("failed to run verifier: %v", err)
 	} else {
-		return false, fmt.Errorf("unreachable")
+		return false, fmt.Errorf("unreachable (output: '%v')", out)
 	}
 
 }
