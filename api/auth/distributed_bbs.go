@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
-
-	msgpack "github.com/vmihailenco/msgpack/v5"
 )
 
 const verifierPath = "../aias-verifier"
@@ -26,7 +24,7 @@ func VerifySignature(message Message, signature Signature, gpk Gpk) (bool, error
 		return false, fmt.Errorf("failed to format message")
 	}
 
-	encoded, err := params.encode()
+	encoded := params.encode()
 	if err != nil {
 		return false, fmt.Errorf("failed to encode data")
 	}
@@ -73,6 +71,6 @@ func fromData(message Message, signature Signature, gpk Gpk) (VerifyParams, erro
 
 }
 
-func (p VerifyParams) encode() ([]byte, error) {
-	return msgpack.Marshal(&p)
+func (p VerifyParams) encode() []byte {
+	return append(append([]byte(p.Signature), []byte(p.Gpk)...), p.Message...)
 }
