@@ -24,10 +24,25 @@ func VerifySignature(message Message, signature Signature, gpk Gpk) (bool, error
 		return false, fmt.Errorf("failed to format message")
 	}
 
-	encoded := params.encode()
+	return params.verify()
+}
+
+func fromData(message Message, signature Signature, gpk Gpk) (VerifyParams, error) {
+	encoded, err := json.Marshal(message)
 	if err != nil {
-		return false, fmt.Errorf("failed to encode data")
+		return VerifyParams{}, err
 	}
+
+	return VerifyParams{
+		Message:   encoded,
+		Signature: signature,
+		Gpk:       gpk,
+	}, nil
+
+}
+
+func (p VerifyParams) verify() (bool, error) {
+	encoded := p.encode()
 
 	cmd := exec.Command(verifierPath, "verify")
 	cmdStdin, err := cmd.StdinPipe()
@@ -55,19 +70,6 @@ func VerifySignature(message Message, signature Signature, gpk Gpk) (bool, error
 	} else {
 		return false, fmt.Errorf("unreachable")
 	}
-}
-
-func fromData(message Message, signature Signature, gpk Gpk) (VerifyParams, error) {
-	encoded, err := json.Marshal(message)
-	if err != nil {
-		return VerifyParams{}, err
-	}
-
-	return VerifyParams{
-		Message:   encoded,
-		Signature: signature,
-		Gpk:       gpk,
-	}, nil
 
 }
 
