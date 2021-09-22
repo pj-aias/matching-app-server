@@ -72,5 +72,15 @@ func fromData(message Message, signature Signature, gpk Gpk) (VerifyParams, erro
 }
 
 func (p VerifyParams) encode() []byte {
-	return append(append([]byte(p.Signature), []byte(p.Gpk)...), p.Message...)
+	/* concat three byte slices
+	{SIGNATURE}
+	{GPK}
+	{MESSAGE}
+	*/
+	res := []byte(p.Signature)
+	res = append(res, '\n')
+	res = append(res, []byte(p.Gpk)...)
+	res = append(res, '\n')
+	res = append(res, p.Message...)
+	return res
 }
