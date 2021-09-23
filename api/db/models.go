@@ -1,8 +1,9 @@
 package db
 
 import (
-	"github.com/pj-aias/matching-app-server/auth"
 	"gorm.io/gorm"
+
+	dBbs "github.com/pj-aias/matching-app-server/auth/distributed_bbs"
 )
 
 type User struct {
@@ -13,7 +14,7 @@ type User struct {
 }
 
 type Gpk struct {
-	Gpk    auth.Gpk
+	Gpk    dBbs.Gpk
 	UserID int
 	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }

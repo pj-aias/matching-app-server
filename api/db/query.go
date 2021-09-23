@@ -3,7 +3,7 @@ package db
 import (
 	"errors"
 
-	"github.com/pj-aias/matching-app-server/auth"
+	dBbs "github.com/pj-aias/matching-app-server/auth/distributed_bbs"
 	"gorm.io/gorm"
 )
 
@@ -53,7 +53,7 @@ func GetAllUsers() ([]User, error) {
 	return users, result.Error
 }
 
-func GetUserGpk(userId uint) (auth.Gpk, error) {
+func GetUserGpk(userId uint) (dBbs.Gpk, error) {
 	gpk := Gpk{}
 	err := database.Model(&Gpk{}).Where("user_id = ?", userId).Take(&gpk).Error
 

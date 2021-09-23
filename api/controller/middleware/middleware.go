@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/pj-aias/matching-app-server/auth"
+	dBbs "github.com/pj-aias/matching-app-server/auth/distributed_bbs"
 )
 
 func AuthorizeToken() gin.HandlerFunc {
@@ -39,38 +40,7 @@ func AuthorizeToken() gin.HandlerFunc {
 	}
 }
 
-type Gm = string
-type Gpk = string
-
-type GpkRegistry interface {
-	GetGpk(gm Gm) (Gpk, error)
-}
-
-func CombineGpk(gpks []Gpk) (Gpk, error) {
-	// TODO implement CpmbineGpk process
-	return gpks[0], nil
-}
-
-func GetGpkFromGms(registry GpkRegistry, gms []Gm) (Gpk, error) {
-	gpks := []Gpk{}
-	for _, gm := range gms {
-		gpk, err := registry.GetGpk(gm)
-		if err != nil {
-			return "", fmt.Errorf("could not get gpk from %v: %v", gm, err)
-		}
-
-		gpks = append(gpks, gpk)
-	}
-
-	combinedGpk, err := CombineGpk(gpks)
-	if err != nil {
-		return "", fmt.Errorf("could not combine gpks: %v", err)
-	}
-
-	return combinedGpk, nil
-}
-
-func VerifySignature(gpkRegistry GpkRegistry) gin.HandlerFunc {
+func VerifySignature(gpkRegistry dBbs.GpkRegistry) gin.HandlerFunc {
 	// validate signature
 
 	type gmsData = []string
@@ -86,7 +56,7 @@ func VerifySignature(gpkRegistry GpkRegistry) gin.HandlerFunc {
 			return
 		}
 
-		gpk, err := GetGpkFromGms(gpkRegistry, gms)
+		gpk, err := dBbs.GetGpkFromGms(gpkRegistry, gms)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "failed to get gpk: " + err.Error()})
 			return
@@ -101,7 +71,7 @@ func VerifySignature(gpkRegistry GpkRegistry) gin.HandlerFunc {
 		// body (Reader) will be consumed if once read, so reset the data
 		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-		ok, err := auth.VerifySignature(body, signature, gpk)
+		ok, err := dBbs.VerifySignature(body, signature, gpk)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to validate signature"})
 			return

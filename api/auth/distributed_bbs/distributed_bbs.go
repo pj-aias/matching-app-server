@@ -1,4 +1,4 @@
-package auth
+package distributed_bbs
 
 import (
 	"encoding/json"
@@ -18,6 +18,7 @@ type VerifyParams struct {
 type Message = interface{}
 type Signature = string
 type Gpk = string
+type Gm = string
 
 func VerifySignature(message Message, signature Signature, gpk Gpk) (bool, error) {
 	params, err := fromData(message, signature, gpk)

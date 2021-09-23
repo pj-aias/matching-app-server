@@ -1,4 +1,4 @@
-package auth
+package distributed_bbs
 
 import (
 	"testing"
