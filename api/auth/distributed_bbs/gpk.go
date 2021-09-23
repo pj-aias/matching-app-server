@@ -54,7 +54,7 @@ type CachedRegistry struct {
 	Cache map[Gm]Gpk
 }
 
-func (r CachedRegistry) GetGpk(gms Gms) (Gpk, error) {
+func (r CachedRegistry) GetGpk(gm Gm, gms Gms) (Gpk, error) {
 	cacheKey := gms.toKey()
 	// if cache found, return it
 	if cache := r.Cache[cacheKey]; cache != "" {

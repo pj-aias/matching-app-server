@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/pj-aias/matching-app-server/auth/distributed_bbs"
 	"github.com/pj-aias/matching-app-server/controller"
 	"github.com/pj-aias/matching-app-server/controller/middleware"
 )
@@ -19,7 +20,7 @@ func main() {
 
 	// require existing users to send signature
 	existingUsers := r.Group("/")
-	existingUsers.Use(middleware.VerifySignature)
+	existingUsers.Use(middleware.VerifySignature(distributed_bbs.CachedRegistry{}))
 
 	{
 		existingUsers.POST("login", controller.Login)
