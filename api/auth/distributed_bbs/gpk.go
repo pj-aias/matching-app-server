@@ -29,3 +29,19 @@ func GetGpkFromGms(registry GpkRegistry, gms []Gm) (Gpk, error) {
 
 	return combinedGpk, nil
 }
+
+type CachedRegistry struct {
+	Cache map[Gm]Gpk
+}
+
+func (r CachedRegistry) Get(gm Gm) (Gpk, error) {
+	// if cache found, return it
+	if cache := r.Cache[gm]; cache != "" {
+		return cache, nil
+	}
+
+	// TODO: get from the internet
+	gpk := "someGpk"
+
+	return gpk, nil
+}
