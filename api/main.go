@@ -11,32 +11,41 @@ import (
 
 func main() {
 	r := gin.Default()
-	r.POST("user", controller.UserAdd)
-	r.POST("login", controller.Login)
+
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{})
 	})
+	r.POST("user", controller.UserAdd)
 
-	authRequired := r.Group("/")
-	authRequired.Use(middleware.AuthorizeToken())
+	// require existing users to send signature
+	existingUsers := r.Group("/")
+	existingUsers.Use(middleware.VerifySignature)
 
 	{
-		authRequired.GET("user/:id", controller.UserShow)
-		authRequired.PATCH("user", controller.UserUpdate)
+		existingUsers.POST("login", controller.Login)
 
-		authRequired.GET("follow/:id", controller.ShowFollow)
-		authRequired.POST("follow/:id", controller.FollowUser)
-		authRequired.DELETE("follow/:id", controller.UnfollowUser)
-		authRequired.GET("followers", controller.ShowFollowers)
-		authRequired.GET("followees", controller.ShowFollowees)
+		// Authorization with JWT required
+		authRequired := existingUsers.Group("/")
+		authRequired.Use(middleware.AuthorizeToken())
 
-		authRequired.POST("message", controller.CreateRoom)
-		authRequired.GET("message/rooms", controller.ShowRooms)
-		authRequired.POST("message/:roomId", controller.AddMessage)
-		authRequired.GET("message/:roomId", controller.ShowMessages)
+		{
+			authRequired.GET("user/:id", controller.UserShow)
+			authRequired.PATCH("user", controller.UserUpdate)
 
-		authRequired.POST("matching", controller.MakeMatch)
+			authRequired.GET("follow/:id", controller.ShowFollow)
+			authRequired.POST("follow/:id", controller.FollowUser)
+			authRequired.DELETE("follow/:id", controller.UnfollowUser)
+			authRequired.GET("followers", controller.ShowFollowers)
+			authRequired.GET("followees", controller.ShowFollowees)
 
+			authRequired.POST("message", controller.CreateRoom)
+			authRequired.GET("message/rooms", controller.ShowRooms)
+			authRequired.POST("message/:roomId", controller.AddMessage)
+			authRequired.GET("message/:roomId", controller.ShowMessages)
+
+			authRequired.POST("matching", controller.MakeMatch)
+
+		}
 	}
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
