@@ -51,7 +51,7 @@ request body:
 
 response:
 
-```
+```json
 {
     "message": {
         "id": 321,
@@ -63,7 +63,48 @@ response:
             "avatar": "https://example.com/hoge.png"
         },
         "content": "hogehoge message"
-    }
+    },
+    "chatroom": {
+        "id": 432,
+        "users": [
+            {
+                "id": 123,
+                "username": "hoge",
+                "bio": "hogehoge bio",
+                "avatar": "https://examlpe.com/hoge.png"
+            },
+            {
+                "id": 124,
+                "username": "fuga",
+                "bio": "fugafuga bio",
+                "avatar": "https://examlpe.com/fuga.png"
+            }
+        ]
+    },
+    "messages": [
+        {
+             "id": 321,
+             "chatroom_id": 432,
+             "user": {
+                 "id": 123,
+                 "username": "hoge",
+                 "bio": "hogehoge bio",
+                 "avatar": "https://example.com/hoge.png"
+             },
+            "content": "hogehoge message"
+        },
+        {
+             "id": 322,
+             "chatroom_id": 432,
+             "user": {
+                 "id": 124,
+                 "username": "fuga",
+                 "bio": "fugafuga bio",
+                 "avatar": "https://example.com/fuga.png"
+             },
+            "content": "fugafuga message"
+        }
+    },
 }
 ```
 
