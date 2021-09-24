@@ -46,11 +46,10 @@ func ValidatePassword(hash []byte, password string) error {
 }
 
 func CreateToken(userId int) (string, error) {
-	//TODO check
 	claims := CustomClaims{
 		userId,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Minute * 60).Unix(),
+			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 			Issuer:    "matching-app",
 		},
 	}
