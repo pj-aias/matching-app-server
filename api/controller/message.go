@@ -18,7 +18,9 @@ type Message struct {
 }
 
 type MessageResponse struct {
-	Message Message `json:"message"`
+	Message  Message   `json:"message"`
+	Messages []Message `json:"messages"`
+	Chatroom Chatroom  `json:"chatroom"`
 }
 
 type MessagesResponse struct {
@@ -156,8 +158,21 @@ func AddMessage(c *gin.Context) {
 		return
 	}
 
-	post := fromDBMessage(createdPost)
-	response := MessageResponse{post}
+	msg := fromDBMessage(createdPost)
+
+	msgsRaw, err := db.GetMessages(uint(roomId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	msgs := fromDBMessages(msgsRaw)
+
+	response := MessageResponse{
+		Message:  msg,
+		Messages: msgs,
+		Chatroom: fromDBRoom(room),
+	}
 	c.JSON(http.StatusOK, response)
 }
 
@@ -253,7 +268,27 @@ func UpdateMessageContent(c *gin.Context) {
 		return
 	}
 	msg := fromDBMessage(rawMessage)
-	response := MessageResponse{msg}
+
+	roomId := old.ChatroomId
+	msgsRaw, err := db.GetMessages(uint(roomId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	msgs := fromDBMessages(msgsRaw)
+	roomRaw, err := db.GetRoom(uint(roomId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	room := fromDBRoom(roomRaw)
+
+	response := MessageResponse{
+		Message:  msg,
+		Messages: msgs,
+		Chatroom: room,
+	}
 
 	c.JSON(http.StatusOK, response)
 }
