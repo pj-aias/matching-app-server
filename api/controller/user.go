@@ -51,7 +51,8 @@ func UserShow(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "an error occured while getting user from database: " + err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -84,14 +85,15 @@ func UserAdd(c *gin.Context) {
 		return
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		// normal error
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "an error occured while contacting to database: " + err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
 	// validate password and generate hash before inserting user data into DB
 	passwordHash, err := auth.GeneratePasswordHash(data.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to generate password hash: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate password hash: " + err.Error()})
 		return
 	}
 
@@ -141,7 +143,7 @@ func UserUpdate(c *gin.Context) {
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
 		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
@@ -151,13 +153,15 @@ func UserUpdate(c *gin.Context) {
 
 	_, err := db.UpdateUser(uint(userId), userData)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
 	user, err := db.GetUser(uint64(userId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -184,13 +188,15 @@ func Login(c *gin.Context) {
 
 	user, err := db.LookupUser(data.Username)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
 	hash, err := db.GetPasswordHash(uint64(user.ID))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -198,13 +204,14 @@ func Login(c *gin.Context) {
 	if errors.Is(err, &auth.ErrPasswordDidNotMatch) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "password did not match"})
 	} else if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
 	token, err := auth.CreateToken(int(user.ID))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user token: " + err.Error()})
 		return
 	}
 

@@ -97,13 +97,14 @@ func CreateRoom(c *gin.Context) {
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
 		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
 	createdRoom, err := db.CreateRoom([]uint{uint(userId), uint(targetId)})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -133,13 +134,15 @@ func AddMessage(c *gin.Context) {
 
 	roomId, err := strconv.ParseUint(c.Param("roomId"), 0, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
 	room, err := db.GetRoom(uint(roomId))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -155,7 +158,8 @@ func AddMessage(c *gin.Context) {
 
 	createdPost, err := db.CreateMessage(uint(userId), uint(roomId), data.Content)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -167,7 +171,8 @@ func AddMessage(c *gin.Context) {
 func ShowMessages(c *gin.Context) {
 	chatroomId, err := strconv.ParseUint(c.Param("roomId"), 0, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to parse room id: %v", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
@@ -177,7 +182,8 @@ func ShowMessages(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "chatroom not found"})
 		return
 	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -188,7 +194,8 @@ func ShowMessages(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
 		return
 	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 	room := fromDBRoom(rawRoom)
@@ -201,13 +208,14 @@ func ShowRooms(c *gin.Context) {
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
 		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
 	rawRooms, err := db.GetRooms(uint(userId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -231,30 +239,32 @@ func UpdateMessageContent(c *gin.Context) {
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
 		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
 	old, err := db.GetMessage(uint(data.TargetMessageId))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "messages not found"})
 		return
 	}
 
 	if old.UserID != userId {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "you cannot update a post that was created by other users"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "you cannot update a message that was created by other users"})
 		return
 	}
 
 	_, err = db.UpdateMessageContent(uint(data.TargetMessageId), data.Content)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
 	rawMessage, err := db.GetMessage(uint(data.TargetMessageId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 	msg := fromDBMessage(rawMessage)
@@ -266,14 +276,15 @@ func UpdateMessageContent(c *gin.Context) {
 func DeleteMessage(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 0, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
 		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
@@ -284,13 +295,14 @@ func DeleteMessage(c *gin.Context) {
 	}
 
 	if target.UserID != userId {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "you cannot update a post that was created by other users"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "you cannot update a message that was created by other users"})
 		return
 	}
 
 	err = db.DeleteMessage(uint(id))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
