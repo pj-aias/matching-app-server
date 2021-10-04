@@ -18,7 +18,8 @@ type Follow struct {
 func ShowFollow(c *gin.Context) {
 	target, err := strconv.ParseUint(c.Param("id"), 0, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
@@ -31,7 +32,8 @@ func ShowFollow(c *gin.Context) {
 
 	response, err := getFollowFromDB(uint(srcUserId), uint(target))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -41,7 +43,8 @@ func ShowFollow(c *gin.Context) {
 func FollowUser(c *gin.Context) {
 	destUserId, err := strconv.ParseUint(c.Param("id"), 0, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -54,13 +57,16 @@ func FollowUser(c *gin.Context) {
 
 	_, err = db.CreateFollow(uint(srcUserId), uint(destUserId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
+
 		return
 	}
 
 	response, err := getFollowFromDB(uint(srcUserId), uint(destUserId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -70,7 +76,8 @@ func FollowUser(c *gin.Context) {
 func UnfollowUser(c *gin.Context) {
 	destUserId, err := strconv.ParseUint(c.Param("id"), 0, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -83,13 +90,15 @@ func UnfollowUser(c *gin.Context) {
 
 	err = db.DestroyFollow(uint(srcUserId), uint(destUserId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
 	response, err := getFollowFromDB(uint(srcUserId), uint(destUserId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -104,19 +113,21 @@ func ShowFollowees(c *gin.Context) {
 	source, ok := c.MustGet("userId").(int)
 	if !ok {
 		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
 	followings, err := db.GetFollowing(uint(source))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
 	followees, err := follows2users(followings, true)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -135,19 +146,21 @@ func ShowFollowers(c *gin.Context) {
 	source, ok := c.MustGet("userId").(int)
 	if !ok {
 		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
 	followeds, err := db.GetFollowed(uint(source))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
 	followers, err := follows2users(followeds, false)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
