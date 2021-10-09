@@ -140,7 +140,11 @@ func AddMessage(c *gin.Context) {
 	}
 
 	room, err := db.GetRoom(uint(roomId))
-	if err != nil {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		e := "chatroom not found"
+		c.JSON(http.StatusNotFound, gin.H{"error": e})
+		return
+	} else if err != nil {
 		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
