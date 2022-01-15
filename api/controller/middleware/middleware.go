@@ -24,8 +24,8 @@ func AuthorizeToken() gin.HandlerFunc {
 		tokenString := strings.TrimSpace(authHeader[len(BEARER_SCHEMA):])
 		userId, err := auth.ValidateToken(tokenString)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "authorization failed: '%v'\n", err)
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			c.Abort()
 			return
 		}
 

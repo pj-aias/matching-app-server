@@ -42,7 +42,11 @@ func GeneratePasswordHash(password string) ([]byte, error) {
 }
 
 func ValidatePassword(hash []byte, password string) error {
-	return bcrypt.CompareHashAndPassword(hash, []byte(password))
+	err := bcrypt.CompareHashAndPassword(hash, []byte(password))
+	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+		return &ErrPasswordDidNotMatch
+	}
+	return err
 }
 
 func CreateToken(userId int) (string, error) {
@@ -72,16 +76,26 @@ func ValidateToken(tokenString string) (userId int, err error) {
 		return PubKey, nil
 	})
 
-	if err != nil {
+	if ve, ok := err.(*jwt.ValidationError); !token.Valid && ok {
+		authError := AuthenticationError{"unknown reason"}
+		if ve.Errors&jwt.ValidationErrorExpired != 0 {
+			authError = ErrTokenExpired
+		} else if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+			authError = AuthenticationError{"not a token string: " + tokenString}
+		}
+		log.Printf("authentication failed (%v) for token %v", authError.reason, tokenString)
+		return 0, &authError
+	} else if !ok {
+		// not a validation error
 		return 0, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		// All claim values seems to be float. So we must convert to int after assertion to float
 		userId = int(claims["UserId"].(float64))
 		log.Printf("authentication complete for user %v", userId)
 	} else {
-		return 0, errors.New("get user_id failed")
+		return 0, errors.New("failed to get user id from token")
 	}
 
 	return userId, nil

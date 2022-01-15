@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
 
@@ -16,13 +17,15 @@ type MatchResponse struct {
 func MakeMatch(c *gin.Context) {
 	userId, ok := c.MustGet("userId").(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, "invalid user id")
+		e := fmt.Sprintf("invalid user id: %v", c.MustGet("userId"))
+		c.JSON(http.StatusBadRequest, gin.H{"error": e})
 		return
 	}
 
 	targetUsers, err := getMatchUsers(uint(userId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 
@@ -35,7 +38,8 @@ func MakeMatch(c *gin.Context) {
 
 	rawChatroom, err := db.CreateRoom([]uint{uint(userId), matchedUser.ID})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		e := fmt.Sprintf("failed to cummunicate with the database: %v", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": e})
 		return
 	}
 	chatroom := fromDBRoom(rawChatroom)
